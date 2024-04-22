@@ -1,0 +1,9 @@
+@startuml
+left to right direction
+actor Usuario
+rectangle "Back-end Adivinanzas Matemáticas" {
+ Usuario -- (Resolver Adivinanza)
+ (Resolver Adivinanza) .> (Verificar Respuesta) : include
+ Usuario -- (Consultar Progreso) Usuario -- (Recibir Recompensa)
+}
+@enduml
