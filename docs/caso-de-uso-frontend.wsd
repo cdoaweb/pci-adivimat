@@ -1,8 +1,8 @@
 @startuml
 left to right direction
 actor Usuario
-rectangle "Front-end Adivinanzas Matemáticas con React Native" {
- Usuario -- (Seleccionar Nivel)
+rectangle "Front-end Adivinanzas Matemáticas con React" {
+ Usuario -- (Seleccionar Tema)
  Usuario -- (Visualizar Adivinanza)
  Usuario -- (Enviar Respuesta)
  Usuario <.. (Recibir Feedback) : extends
