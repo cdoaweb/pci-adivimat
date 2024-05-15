@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 function SubthemeSelector({ themeId, setSubthemeId, onConfirm }) {
   const [subthemes, setSubthemes] = useState([]);
   const [selectedSubtheme, setSelectedSubtheme] = useState('');
 
   useEffect(() => {
-    fetch(`http://localhost:3000/subtemas/${themeId}`)
-      .then(response => response.json())
-      .then(data => {
-        setSubthemes(data.subtemas);
-      })
-      .catch(error => console.error('Error fetching subthemes:', error));
+    if (themeId) {
+      console.log("Fetching subthemes for theme ID:", themeId); // Depuro: ID del tema solicitado
+      axios.get(`http://localhost:3000/subtemas/${themeId}`)
+        .then(response => {
+          console.log("Subthemes loaded:", response.data.subtemas); // Depurar: datos recibidos
+          setSubthemes(response.data.subtemas);
+        })
+        .catch(error => {
+          console.error('Error fetching subthemes:', error);
+          alert('Error al cargar los subtemas');
+        });
+    }
   }, [themeId]);
 
   const handleSelectionChange = (e) => {
@@ -27,7 +34,7 @@ function SubthemeSelector({ themeId, setSubthemeId, onConfirm }) {
           <option key={subtheme._id} value={subtheme._id}>{subtheme.name}</option>
         ))}
       </select>
-      <button onClick={onConfirm}>Jugar</button>
+      <button onClick={onConfirm}>Confirmar</button>
     </div>
   );
 }
