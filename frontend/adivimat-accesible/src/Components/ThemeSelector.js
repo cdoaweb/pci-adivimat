@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 function ThemeSelector({ setThemeId, onConfirm }) {
   const [themes, setThemes] = useState([]);
   const [selectedTheme, setSelectedTheme] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:3000/temas')
-      .then(response => response.json())
-      .then(data => setThemes(data))
+    axios.get('http://localhost:3000/temas')
+      .then(response => setThemes(response.data))
       .catch(error => console.error('Error fetching themes:', error));
   }, []);
 

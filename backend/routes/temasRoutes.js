@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Tema = require('../models/tema');
+const temaController = require('../controllers/temaController');
+
+router.use(express.json());
+
 // Temas
 router.post('/temas', temaController.createTema);
 router.get('/temas', temaController.getTemas);
@@ -19,12 +23,14 @@ router.get('/temas/:temaId/subtemas/:subtemaId/adivinanzas', temaController.getA
 router.put('/temas/:temaId/subtemas/:subtemaId/adivinanzas/:adivinanzaId', temaController.updateAdivinanza);
 router.delete('/temas/:temaId/subtemas/:subtemaId/adivinanzas/:adivinanzaId', temaController.deleteAdivinanza);
 
-// parsear JSON
-router.use(express.json());
-
-router.get('/temas', async (req, res) => {
-  const temas = await Tema.find({});
-  res.json(temas);
+//endpoint para cargar múltiples temas
+router.post('/cargar-temas', async (req, res) => {
+    try {
+        const temas = await Tema.insertMany(req.body);
+        res.status(201).json(temas);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 router.get('/adivinanzas/:subtemaId', async (req, res) => {
@@ -37,7 +43,6 @@ router.get('/adivinanzas/:subtemaId', async (req, res) => {
   }
 });
 
-// Mostrar la siguiente adivinanza
 router.get('/siguiente-adivinanza/:subtemaId/:adivinanzaId', async (req, res) => {
   const { subtemaId, adivinanzaId } = req.params;
   const tema = await Tema.findOne({ "subtemas._id": subtemaId }, { 'subtemas.$': 1 });
@@ -54,7 +59,6 @@ router.get('/siguiente-adivinanza/:subtemaId/:adivinanzaId', async (req, res) =>
   }
 });
 
-// Cambiar de subtema dentro del mismo tema
 router.get('/cambiar-subtema/:temaId/:subtemaId', async (req, res) => {
   const { temaId, subtemaId } = req.params;
   const tema = await Tema.findById(temaId);
@@ -70,7 +74,6 @@ router.get('/cambiar-subtema/:temaId/:subtemaId', async (req, res) => {
   }
 });
 
-// Manejar la respuesta de una adivinanza y ofrecer la siguiente
 router.post('/respuesta/:subtemaId/:adivinanzaId', async (req, res) => {
   const { subtemaId, adivinanzaId } = req.params;
   const { respuestaUsuario } = req.body;
@@ -94,7 +97,7 @@ router.post('/respuesta/:subtemaId/:adivinanzaId', async (req, res) => {
       res.json({ message: 'Respuesta correcta!', puntos: adivinanza.puntos, intentosRestantes: adivinanza.intentos });
     } else {
       if (adivinanza.intentos === 0) {
-        adivinanza.respuestaRevelada = true; // mostrar la respuesta si no quedan más intentos
+        adivinanza.respuestaRevelada = true;
         await tema.save();
         res.json({ message: 'No quedan más intentos. Respuesta correcta: ' + adivinanza.respuesta, respuestaRevelada: adivinanza.respuestaRevelada });
       } else {
