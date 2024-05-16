@@ -4,28 +4,48 @@ import axios from 'axios';
 function ThemeSelector({ setThemeId, onConfirm }) {
   const [themes, setThemes] = useState([]);
   const [selectedTheme, setSelectedTheme] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios.get('http://localhost:3000/temas')
-      .then(response => setThemes(response.data))
-      .catch(error => console.error('Error fetching themes:', error));
+    const fetchThemes = async () => {
+      setIsLoading(true);
+      setError(null); // Resetea el estado de error en cada intento de carga
+      try {
+        const response = await axios.get('http://localhost:3000/temas');
+        setThemes(response.data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching themes:', error);
+        setError('No se pudieron cargar los temas, por favor intente de nuevo más tarde.');
+        setIsLoading(false);
+      }
+    };
+
+    fetchThemes();
   }, []);
 
   const handleSelectionChange = (e) => {
-    setSelectedTheme(e.target.value);
-    setThemeId(e.target.value);
+    const newThemeId = e.target.value;
+    setSelectedTheme(newThemeId);
+    setThemeId(newThemeId);
   };
 
   return (
     <div>
       <h2>Seleccione un Tema:</h2>
-      <select onChange={handleSelectionChange} value={selectedTheme}>
-        <option disabled value="">-- Seleccione un Tema --</option>
-        {themes.map(theme => (
-          <option key={theme._id} value={theme._id}>{theme.tema}</option>
-        ))}
-      </select>
-      <button onClick={onConfirm}>Confirmar Tema</button>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {isLoading ? (
+        <p>Cargando temas...</p>
+      ) : (
+        <select onChange={handleSelectionChange} value={selectedTheme} disabled={!themes.length}>
+          <option disabled value="">-- Seleccione un Tema --</option>
+          {themes.map(theme => (
+            <option key={theme._id} value={theme._id}>{theme.tema}</option>
+          ))}
+        </select>
+      )}
+      <button onClick={onConfirm} disabled={!selectedTheme}>Confirmar Tema</button>
     </div>
   );
 }
