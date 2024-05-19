@@ -33,11 +33,12 @@ router.post('/cargar-temas', async (req, res) => {
     }
 });
 
-router.get('/adivinanzas/:subtemaId', async (req, res) => {
+router.get('/subtemas/:subtemaId', async (req, res) => {
   const { subtemaId } = req.params;
-  const subtema = await Tema.findOne({ "subtemas._id": subtemaId }, { 'subtemas.$': 1 });
+  const subtema = await Tema.findById(subtemaId);
+  console.log(subtema);
   if (subtema) {
-    res.json(subtema.subtemas[0].adivinanzas);
+    res.json(subtema);
   } else {
     res.status(404).send('Subtema no encontrado');
   }
