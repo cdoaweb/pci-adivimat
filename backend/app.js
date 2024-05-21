@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-app.use('/auth', authRoutes); // Rutas para autenticación
+app.use('/api/auth', authRoutes); // Rutas para autenticación
 app.use('/', temasRoutes); // Rutas principales de la aplicación
 
 const mongoUri = process.env.MONGO_URI;
