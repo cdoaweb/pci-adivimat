@@ -7,9 +7,8 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const {login, state: {isAuthenticated, loginError}} = useAuth();
+  const { login, state: { isAuthenticated, loginError } } = useAuth();
   const navigate = useNavigate();
-
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -68,11 +67,11 @@ function LoginForm() {
           <button type="submit">Iniciar Sesión</button>
         </div>
         <div className='link-container'>
-          <Link to="/registro" className='link'>¿No tienes cuenta? Registraté</Link>
+          <Link to="/register" className='link'>¿No tienes cuenta? Registráte</Link>
         </div>
       </form>
     </div>
   );
 }
 
-export default Login;
+export default LoginForm;

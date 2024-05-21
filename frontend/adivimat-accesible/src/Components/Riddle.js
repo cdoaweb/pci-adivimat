@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-function Riddle({ subthemeId, riddleId, setRiddleId }) {
+function Riddle({ temaId, subthemeId, riddleId, setRiddleId }) {
   const [riddle, setRiddle] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchRiddle = async () => {
-      if (subthemeId && riddleId) {
+      if (temaId && subthemeId && riddleId) {
         setIsLoading(true);
         setError(null);
         try {
-          const response = await axios.get(`http://localhost:3000/adivinanzas/${subthemeId}/${riddleId}`);
-          setRiddle(response.data);
+          const response = await axios.get(`http://localhost:3000/temas/${temaId}/subtemas/${subthemeId}/adivinanzas`);
+          const riddle = response.data.find(r => r._id === riddleId);
+          setRiddle(riddle);
           setIsLoading(false);
         } catch (error) {
           console.error('Error fetching riddle:', error);
@@ -24,7 +25,7 @@ function Riddle({ subthemeId, riddleId, setRiddleId }) {
     };
 
     fetchRiddle();
-  }, [subthemeId, riddleId]);
+  }, [temaId, subthemeId, riddleId]);
 
   const handleAnswer = async (answer) => {
     try {
@@ -33,7 +34,7 @@ function Riddle({ subthemeId, riddleId, setRiddleId }) {
       });
       alert(response.data.message);
       if (response.data.respuestaRevelada) {
-        
+        // Lógica para manejar cuando la respuesta se revela
       }
     } catch (error) {
       console.error('Error submitting answer:', error);

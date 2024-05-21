@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthProvider';
 import { validateEmail } from '../validation/validation';
 
 function RegisterForm() {
@@ -8,14 +7,14 @@ function RegisterForm() {
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
   const [username, setUsername] = useState('');
+  const [adminCode, setAdminCode] = useState('');
   const [error, setError] = useState('');
-  const {register, state} = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email || !password || !username) {
+    if (!email || !password || !username || !adminCode) {
       setError('Por favor, complete todos los campos');
       return;
     }
@@ -29,27 +28,35 @@ function RegisterForm() {
       setError('El email no es válido');
       return;
     }
-    register(email, password, username);
+
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password, username, adminCode })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        navigate('/login');
+      } else {
+        setError(data.message || 'Error al registrar el usuario');
+      }
+    } catch (err) {
+      setError('Error al registrar el usuario');
+    }
   };
 
   useEffect(() => {
-    console.log(state);
-    if (state.isAuthenticated) {
-      navigate('/');
-    }
-    if (state.loginError) {
-      setError(state.loginError);
-    }
-  }, [state, navigate]);
-
-  useEffect(() => {
     setError('');
-  }, [email, password, password2, username]);
+  }, [email, password, password2, username, adminCode]);
 
   return (
     <div className="register-form-container">
       <form className="register-form" onSubmit={handleSubmit}>
-        <h2>Crear cuenta</h2>
+        <h2>Crear cuenta de administrador</h2>
         <div className="form-control">
           <label htmlFor="username">Nombre de usuario</label>
           <input
@@ -78,12 +85,21 @@ function RegisterForm() {
           />
         </div>
         <div className="form-control">
-          <label htmlFor="password">Repetir Contraseña</label>
+          <label htmlFor="password2">Repetir Contraseña</label>
           <input
             type="password"
             id="password2"
             value={password2}
             onChange={(e) => setPassword2(e.target.value)}
+          />
+        </div>
+        <div className="form-control">
+          <label htmlFor="adminCode">Código de administrador</label>
+          <input
+            type="text"
+            id="adminCode"
+            value={adminCode}
+            onChange={(e) => setAdminCode(e.target.value)}
           />
         </div>
         {error && <div className="form-error">{error}</div>}
@@ -98,4 +114,4 @@ function RegisterForm() {
   );
 }
 
-export default Register;
+export default RegisterForm;
