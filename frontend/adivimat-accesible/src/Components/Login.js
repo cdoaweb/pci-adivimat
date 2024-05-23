@@ -12,7 +12,7 @@ function LoginForm() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/');
+      navigate('/gestion');
     }
     if (loginError) {
       setError(loginError);
