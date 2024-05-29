@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const AdivinanzaSchema = require('./Adivinanza').schema;
+const AdivinanzaSchema = require('./adivinanza').schema;
 
 const SubtemaSchema = new mongoose.Schema({
   name: String,

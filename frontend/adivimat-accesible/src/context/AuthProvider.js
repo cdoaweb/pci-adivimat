@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../utils/axiosConfig'
 
 const AuthContext = createContext();
 
@@ -35,6 +35,7 @@ export const AuthProvider = ({ children }) => {
         const token = localStorage.getItem('token');
         if (token) {
             const user = JSON.parse(localStorage.getItem('user'));
+            console.log(user);
             dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token } });
         }
         setLoading(false);
@@ -42,7 +43,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
-            const response = await axios.post('http://localhost:3000/login', { email, password });
+            const response = await axios.post('/api/auth/login', { email, password });
             console.log(response.data);
             const { accessToken, user } = response.data;
             localStorage.setItem('token', accessToken);
@@ -56,7 +57,7 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (email, password, username) => {
         try {
-            const response = await axios.post('http://localhost:3000/register', { email, password, username });
+            const response = await axios.post('/api/auth/register', { email, password, username });
             const { accessToken, user } = response.data;
             localStorage.setItem('token', accessToken);
             localStorage.setItem('user', JSON.stringify(user));

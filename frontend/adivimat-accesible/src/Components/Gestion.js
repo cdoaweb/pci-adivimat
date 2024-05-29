@@ -1,5 +1,5 @@
 import React from 'react';
-import ThemeManager from './ThemeManager';
+import ThemeManager from './crud/ThemeManager';
 
 function Gestion() {
   return (

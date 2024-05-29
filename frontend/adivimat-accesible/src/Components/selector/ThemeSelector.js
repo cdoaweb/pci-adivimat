@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../../utils/axiosConfig'
 
 function ThemeSelector({ setThemeId, onConfirm }) {
   const [themes, setThemes] = useState([]);
@@ -12,7 +12,7 @@ function ThemeSelector({ setThemeId, onConfirm }) {
       setIsLoading(true);
       setError(null); // Resetea el estado de error en cada intento de carga
       try {
-        const response = await axios.get('http://localhost:3000/temas');
+        const response = await axios.get('/api/temas');
         setThemes(response.data);
         setIsLoading(false);
       } catch (error) {

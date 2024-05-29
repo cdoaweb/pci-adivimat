@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../../utils/axiosConfig'
 
 function SubthemeSelector({ themeId, setSubthemeId, onConfirm }) {
   const [subthemes, setSubthemes] = useState([]);
@@ -14,7 +14,7 @@ function SubthemeSelector({ themeId, setSubthemeId, onConfirm }) {
         setIsLoading(true);
         setError(null);
         try {
-          const response = await axios.get(`http://localhost:3000/subtemas/${themeId}`);
+          const response = await axios.get(`api/subtemas/${themeId}`);
           console.log("Subthemes loaded:", response.data.subtemas);
           setSubthemes(response.data.subtemas);
           setIsLoading(false);

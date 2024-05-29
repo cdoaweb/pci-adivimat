@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/auth', authRoutes); // Rutas para autenticación
-app.use('/', temasRoutes); // Rutas principales de la aplicación
+app.use('/api', temasRoutes); // Rutas principales de la aplicación
 
 const mongoUri = process.env.MONGO_URI;
 mongoose.connect(mongoUri, {
