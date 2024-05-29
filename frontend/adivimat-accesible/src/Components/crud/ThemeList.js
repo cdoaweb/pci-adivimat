@@ -5,7 +5,7 @@ function ThemeList({ themes, onSelectTheme }) {
     <ul>
       {themes.map(theme => (
         <li key={theme._id} onClick={() => onSelectTheme(theme)}>
-          {theme.name}
+          {theme.tema}
         </li>
       ))}
     </ul>

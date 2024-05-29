@@ -17,7 +17,8 @@ function App() {
 
   return (
     <div className="App">
-      <MenuAppBar userType={user ? user.userType : 'normal'} />
+      {console.log(user, isAuthenticated)}
+      <MenuAppBar userType={user?.isAdmin ? 'admin' : 'normal'} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -25,7 +26,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/gestion" element={
           <PrivateRoute>
-            {isAuthenticated && user.userType === 'admin' ? <Gestion /> : <div>No tiene acceso</div>}
+            <Gestion />
           </PrivateRoute>
         } />
       </Routes>

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const User = require('../models/User');
+const User = require('../models/user');
 const generateToken = require('../utils/generateToken');
 
 exports.register = async (req, res) => {
@@ -14,6 +14,7 @@ exports.register = async (req, res) => {
 
     // Encriptar la contraseña antes de guardar el usuario
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log(hashedPassword)
     const user = new User({ username, email, password: hashedPassword, isAdmin: true });
     await user.save();
 
@@ -33,9 +34,12 @@ exports.login = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-
+    console.log(password, user.password);
     // Comprobar que la contraseña sea correcta
     const isMatch = await bcrypt.compare(password, user.password);
+    
+    console.log(isMatch);
+
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }

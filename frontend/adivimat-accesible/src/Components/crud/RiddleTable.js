@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../../utils/axiosConfig'
 
-function RiddleTable({ subtemaId }) {
+function RiddleTable({ subtheme }) {
   const [adivinanzas, setAdivinanzas] = useState([]);
 
+  console.log(subtheme);
   useEffect(() => {
     const fetchAdivinanzas = async () => {
       try {
-        const respuesta = await axios.get(`/api/subtemas/${subtemaId}/adivinanzas`);
+        const respuesta = await axios.get(`/api/subtemas/${subtheme._id}/adivinanzas`);
         setAdivinanzas(respuesta.data);
       } catch (error) {
         alert('Error al cargar las adivinanzas');
@@ -15,12 +16,12 @@ function RiddleTable({ subtemaId }) {
     };
 
     fetchAdivinanzas();
-  }, [subtemaId]);
+  }, [subtheme]);
 
   const eliminarAdivinanza = async (idAdivinanza) => {
     if (window.confirm('¿Estás seguro de querer eliminar esta adivinanza?')) {
       try {
-        await axios.delete(`/api/subtemas/${subtemaId}/adivinanzas/${idAdivinanza}`);
+        await axios.delete(`/api/subtemas/${subtheme._id}/adivinanzas/${idAdivinanza}`);
         setAdivinanzas(adivinanzas.filter(a => a._id !== idAdivinanza));
       } catch (error) {
         alert('Error al eliminar la adivinanza');

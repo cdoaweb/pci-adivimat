@@ -8,13 +8,11 @@ import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <Router> {/* Agrego BrowserRouter aquí asegurando que todos los componentes dentro de App puedan usar Routes */}
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </Router>
-  </React.StrictMode>
+  <Router> {/* Agrego BrowserRouter aquí asegurando que todos los componentes dentro de App puedan usar Routes */}
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  </Router>
 );
 
 // If you want to start measuring performance in your app, pass a function

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthProvider';
 import { validateEmail } from '../validation/validation';
 
 function LoginForm() {
-  const [email, setEmail] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login, state: { isAuthenticated, loginError } } = useAuth();
@@ -21,21 +21,17 @@ function LoginForm() {
 
   useEffect(() => {
     setError('');
-  }, [email, password]);
+  }, [usernameOrEmail, password]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email || !password) {
-      setError('Por favor, ingrese el usuario y la contraseña');
+    if (!usernameOrEmail || !password) {
+      setError('Por favor, ingrese el nombre de usuario o correo electrónico y la contraseña');
       return;
     }
 
-    if (!validateEmail(email)) {
-      setError('El email no es válido');
-    }
-
-    login(email, password);
+    login(usernameOrEmail, password);
   };
 
   return (
@@ -43,13 +39,13 @@ function LoginForm() {
       <form className="login-form" onSubmit={handleSubmit}>
         <h2>Iniciar Sesión</h2>
         <div className="form-control">
-          <label htmlFor="email">Correo electrónico</label>
+          <label htmlFor="usernameOrEmail">Nombre de usuario o correo electrónico</label>
           <input
             type="text"
-            name="email"
-            id="email"
-            value={email}
-            onChange={(e) => { setEmail(e.target.value) }}
+            name="usernameOrEmail"
+            id="usernameOrEmail"
+            value={usernameOrEmail}
+            onChange={(e) => { setUsernameOrEmail(e.target.value) }}
           />
         </div>
         <div className="form-control">

@@ -51,6 +51,7 @@ exports.getSubtemas = async (req, res) => {
   const { temaId } = req.params;
   try {
     const tema = await Tema.findById(temaId);
+    console.log(tema);
     res.json(tema.subtemas);
   } catch (error) {
     res.status(500).json({ message: error.message });

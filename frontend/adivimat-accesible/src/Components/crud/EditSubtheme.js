@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../../utils/axiosConfig'
 
 function EditSubtheme({ themeId, subthemeId }) {
   const [subthemeName, setSubthemeName] = useState('');

@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import Riddle from './Riddle';
+import axios from '../utils/axiosConfig';
+import RiddleSelector from './selector/RiddleSelector';
 
 function Home() {
   const [temas, setTemas] = useState([]);
   const [selectedTemaId, setSelectedTemaId] = useState(null);
   const [subtemas, setSubtemas] = useState([]);
-  const [selectedSubtemaId, setSelectedSubtemaId] = useState(null);
-  const [riddleId, setRiddleId] = useState(null);
+  const [selectedSubtema, setSelectedSubtema] = useState(null);
 
   useEffect(() => {
     const fetchTemas = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/temas');
+        const response = await axios.get('/api/temas');
         setTemas(response.data);
       } catch (error) {
         console.error('Error fetching temas:', error);
@@ -26,7 +25,7 @@ function Home() {
     if (selectedTemaId) {
       const fetchSubtemas = async () => {
         try {
-          const response = await axios.get(`http://localhost:3000/temas/${selectedTemaId}/subtemas`);
+          const response = await axios.get(`/api/temas/${selectedTemaId}/subtemas`);
           setSubtemas(response.data);
         } catch (error) {
           console.error('Error fetching subtemas:', error);
@@ -39,13 +38,11 @@ function Home() {
 
   const handleSelectTema = (temaId) => {
     setSelectedTemaId(temaId);
-    setSelectedSubtemaId(null);
-    setRiddleId(null);
+    setSelectedSubtema(null);
   };
 
-  const handleSelectSubtema = (subtemaId) => {
-    setSelectedSubtemaId(subtemaId);
-    setRiddleId(null);
+  const handleSelectSubtema = (subtema) => {
+    setSelectedSubtema(subtema);
   };
 
   return (
@@ -72,7 +69,7 @@ function Home() {
           {subtemas.length > 0 ? (
             <ul>
               {subtemas.map((subtema) => (
-                <li key={subtema._id} onClick={() => handleSelectSubtema(subtema._id)}>
+                <li key={subtema.name} onClick={() => handleSelectSubtema(subtema.name)}>
                   {subtema.name}
                 </li>
               ))}
@@ -83,10 +80,10 @@ function Home() {
         </div>
       )}
 
-      {selectedSubtemaId && (
+      {selectedSubtema && (
         <div>
           <h2>Adivinanzas</h2>
-          <Riddle temaId={selectedTemaId} subthemeId={selectedSubtemaId} riddleId={riddleId} setRiddleId={setRiddleId} />
+          <RiddleSelector temaId={selectedTemaId} subtema={selectedSubtema} />
         </div>
       )}
     </div>

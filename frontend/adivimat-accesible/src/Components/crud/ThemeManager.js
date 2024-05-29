@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../../utils/axiosConfig'
 import ThemeList from './ThemeList';
 import SubthemeList from './SubthemeList';
 import RiddleTable from './RiddleTable';
@@ -26,7 +26,7 @@ function ThemeManager() {
     <div>
       <ThemeList themes={temas} onSelectTheme={setTemaSeleccionado} />
       {temaSeleccionado && <SubthemeList themeId={temaSeleccionado._id} onSelectSubtheme={setSubtemaSeleccionado} />}
-      {subtemaSeleccionado && <RiddleTable subthemeId={subtemaSeleccionado._id} />}
+      {subtemaSeleccionado && <RiddleTable subtheme={subtemaSeleccionado} />}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useCallback } from 'react';
+import axios from '../utils/axiosConfig'
 
 const ThemeContext = createContext();
 
@@ -9,11 +10,11 @@ export const ThemeProvider = ({ children }) => {
 
   const fetchThemes = useCallback(async () => {
     try {
-      const response = await fetch('/api/temas');
-      const data = await response.json();
-      setThemes(data);
+      const response = await axios.get('/api/temas');
+      console.log(response.data);
+      setThemes(response.data);
     } catch (error) {
-      console.error('Error al cargar los temas:', error);
+      alert('Error al cargar los temas');
     }
   }, []);
 
