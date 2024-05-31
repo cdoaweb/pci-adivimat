@@ -105,7 +105,7 @@ exports.getAdivinanzas = async (req, res) => {
   const { temaId, subtemaId } = req.params;
   try {
     const tema = await Tema.findById(temaId);
-    const subtema = tema.subtemas.id(subtemaId);
+    const subtema = tema.subtemas.find(subtema=>subtema.name===subtemaId);
     res.json(subtema.adivinanzas);
   } catch (error) {
     res.status(500).json({ message: error.message });

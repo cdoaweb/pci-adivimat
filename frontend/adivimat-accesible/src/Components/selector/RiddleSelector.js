@@ -20,9 +20,9 @@ function RiddleSelector({ temaId, subtema }) {
           console.log(`Fetching riddles for temaId: ${temaId} and subtema: ${subtema}`);
           const response = await axios.get(`/api/temas/${temaId}/subtemas/${subtema}/adivinanzas`);
           console.log('Riddles fetched:', response.data);
-          if (response.data.adivinanzas && response.data.adivinanzas.length > 0) {
-            setAdivinanzas(response.data.adivinanzas);
-            getRandomRiddle(response.data.adivinanzas);
+          if (response.data && response.data.length > 0) {
+            setAdivinanzas(response.data);
+            getRandomRiddle(response.data);
           } else {
             setError('No se encontraron adivinanzas para el subtema seleccionado.');
           }

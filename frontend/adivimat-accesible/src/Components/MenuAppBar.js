@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, Button, Menu, MenuItem } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
+import {LogoutButton} from '../components/LogoutButton';
 
 function MenuAppBar() {
   const [anchorEl, setAnchorEl] = useState(null);
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const handleMenuClick = (event) => {
@@ -38,12 +39,12 @@ function MenuAppBar() {
         >
           <MenuItem onClick={handleMenuClose} component={Link} to="/">Inicio</MenuItem>
           <MenuItem onClick={handleMenuClose} component={Link} to="/about">Acerca de</MenuItem>
-          {user ? (
+          {isAuthenticated ? (
             <>
-              {user.userType === 'admin' && (
+              {user.isAdmin && (
                 <MenuItem onClick={handleMenuClose} component={Link} to="/gestion">Gestión</MenuItem>
               )}
-              <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
+              <MenuItem component={Link} to="/logout" onClick={handleLogout}>Cerrar Sesión</MenuItem>
             </>
           ) : (
             <MenuItem onClick={handleMenuClose} component={Link} to="/login">Iniciar sesión</MenuItem>
