@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../../utils/axiosConfig'
 
-function RiddleTable({ subtheme }) {
+function RiddleTable({ theme, subtheme  }) {
   const [adivinanzas, setAdivinanzas] = useState([]);
 
   console.log(subtheme);
   useEffect(() => {
     const fetchAdivinanzas = async () => {
       try {
-        const respuesta = await axios.get(`/api/subtemas/${subtheme._id}/adivinanzas`);
+        const respuesta = await axios.get(`/api/temas/${theme._id}/subtemas/${subtheme.name}/adivinanzas`);
         setAdivinanzas(respuesta.data);
       } catch (error) {
         alert('Error al cargar las adivinanzas');
