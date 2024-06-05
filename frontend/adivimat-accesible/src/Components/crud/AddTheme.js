@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import axios from '../../utils/axiosConfig'
 
 function AddTheme() {
-  const [themeName, setThemeName] = useState('');
+  const [temaName, setTemaName] = useState('');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
       const response = await axios.post('/api/temas', {
-        name: themeName
+        name: temaName
       });
       alert('Tema añadido con éxito!');
-      setThemeName('');
+      setTemaName('');
     } catch (error) {
       alert('Error al añadir el tema');
     }

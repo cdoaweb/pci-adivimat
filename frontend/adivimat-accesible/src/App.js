@@ -9,6 +9,7 @@ import Home from './components/Home';
 import About from './components/About';
 import MenuAppBar from './components/MenuAppBar';
 import Gestion from './components/Gestion';
+import Footer from './components/Footer';
 import { useAuth } from './context/AuthProvider';
 
 function App() {
@@ -17,19 +18,23 @@ function App() {
 
   return (
     <div className="App">
+      <a href="#mainContent" className="skip-link">Saltar al contenido principal</a>
       {console.log(user, isAuthenticated)}
       <MenuAppBar userType={user?.isAdmin ? 'admin' : 'normal'} />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/gestion" element={
-          <PrivateRoute>
-            <Gestion />
-          </PrivateRoute>
-        } />
-      </Routes>
+      <main id="mainContent">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/gestion" element={
+            <PrivateRoute>
+              <Gestion />
+            </PrivateRoute>
+          } />
+        </Routes>
+      </main>
+      <Footer /> {Footer }
     </div>
   );
 }

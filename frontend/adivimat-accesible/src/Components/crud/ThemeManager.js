@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from '../../utils/axiosConfig'
+import axios from '../utils/axiosConfig'
 import ThemeList from './ThemeList';
 import SubthemeList from './SubthemeList';
 import RiddleTable from './RiddleTable';
