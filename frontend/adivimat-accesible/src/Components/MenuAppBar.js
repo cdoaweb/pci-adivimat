@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, Button, Menu, MenuItem } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
-import {LogoutButton} from '../components/LogoutButton';
+import {LogoutButton} from './LogoutButton';
 
 function MenuAppBar() {
   const [anchorEl, setAnchorEl] = useState(null);

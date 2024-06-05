@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../../utils/axiosConfig'
 
-function EditRiddle({ subthemeId, riddleId }) {
+function EditRiddle({ temaId, subtemaId, riddleId }) {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
 
   useEffect(() => {
     const fetchRiddle = async () => {
       try {
-        const response = await axios.get(`/api/subtemas/${subthemeId}/adivinanzas/${riddleId}`);
+        const response = await axios.get(`/api/temas/${temaId}/subtemas/${subtemaId}/adivinanzas/${riddleId}`);
         setQuestion(response.data.pregunta);
         setAnswer(response.data.respuesta);
       } catch (error) {
@@ -17,12 +17,12 @@ function EditRiddle({ subthemeId, riddleId }) {
     };
 
     fetchRiddle();
-  }, [subthemeId, riddleId]);
+  }, [temaId, subtemaId, riddleId]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      await axios.put(`/api/subtemas/${subthemeId}/adivinanzas/${riddleId}`, {
+      await axios.put(`/api/temas/${temaId}/subtemas/${subtemaId}/adivinanzas/${riddleId}`, {
         pregunta: question,
         respuesta: answer
       });

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
-import { validateEmail } from '../validation/validation';
+import { validation } from '../validation/validation';
 
 function LoginForm() {
   const [usernameOrEmail, setUsernameOrEmail] = useState('');

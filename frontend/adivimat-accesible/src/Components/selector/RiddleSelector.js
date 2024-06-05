@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from '../../utils/axiosConfig';
+import axios from '../utils/axiosConfig';
 
 function RiddleSelector({ temaId, subtema }) {
   const [adivinanzas, setAdivinanzas] = useState([]);
@@ -81,7 +81,7 @@ function RiddleSelector({ temaId, subtema }) {
 
   return (
     <div>
-      <h2>Adivinanza:</h2>
+      <h3>Adivinanza:</h3>
       <p>{currentRiddle.pregunta}</p>
       <input
         type="text"
