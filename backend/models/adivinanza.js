@@ -3,13 +3,11 @@ const mongoose = require('mongoose');
 const AdivinanzaSchema = new mongoose.Schema({
   pregunta: {
     type: String,
-    required: [true, 'La pregunta es obligatoria'],
-    trim: true
+    trim: false
   },
   respuesta: {
     type: String,
-    required: [true, 'La respuesta es obligatoria'],
-    trim: true
+    trim: false
   },
   intentos: {
     type: Number,

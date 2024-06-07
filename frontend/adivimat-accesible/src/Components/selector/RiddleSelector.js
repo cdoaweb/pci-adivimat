@@ -50,6 +50,13 @@ function RiddleSelector({ temaId, subtema }) {
     setUserAnswer(e.target.value);
   };
 
+  const handleKeyPressed = (e) => {
+    if (e.keyCode === 13) {
+      console.log("detectado intro");
+      handleAnswerSubmit();
+    }
+  };
+
   const handleAnswerSubmit = () => {
     if (userAnswer.toLowerCase() === currentRiddle.respuesta.toLowerCase()) {
       alert('¡Correcto!');
@@ -89,6 +96,7 @@ function RiddleSelector({ temaId, subtema }) {
         onChange={handleAnswerChange}
         disabled={showAnswer}
         placeholder="Ingrese su respuesta"
+        onKeyDown={handleKeyPressed}
       />
       <button onClick={handleAnswerSubmit} disabled={showAnswer}>Responder</button>
       <button onClick={handleSkip}>Saltar</button>
