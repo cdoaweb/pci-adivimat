@@ -30,7 +30,7 @@ Abril 2024
 
 # Datos del proyecto
 
- Adivimat Accesible, pretende ser  una aplicación móvil educativa diseñada para mejorar las 
+ Adivimat Accesible, pretende ser  una aplicación educativa diseñada para mejorar las 
 habilidades matemáticas de los usuarios mediante acertijos matemáticos. Orientada a 
 un público diverso, la aplicación promueve el aprendizaje y práctica de conceptos 
 matemáticos, adaptándose a diferentes niveles de habilidad. Los usuarios se enfrentarán 

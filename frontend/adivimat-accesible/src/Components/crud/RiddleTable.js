@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import EditRiddle from './EditRiddle';
 import axios from '../utils/axiosConfig'
 
 function RiddleTable({ temaId, subtema }) {
@@ -48,7 +49,7 @@ function RiddleTable({ temaId, subtema }) {
             <td>{adivinanza.pregunta}</td>
             <td>{adivinanza.respuesta}</td>
             <td>
-              <button onClick={() => editarAdivinanza(adivinanza)}>Editar</button>
+              <button onClick={(EditRiddle) => editarAdivinanza(adivinanza)}>Editar</button>
               <button onClick={() => eliminarAdivinanza(adivinanza._id)}>Eliminar</button>
             </td>
           </tr>

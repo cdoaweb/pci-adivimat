@@ -6,27 +6,56 @@ import RiddleTable from './RiddleTable';
 
 function ThemeManager() {
   const [temas, setTemas] = useState([]);
-  const [temaSeleccionado, setTemaSeleccionado] = useState(null);
-  const [subtemaSeleccionado, setSubtemaSeleccionado] = useState(null);
+  const [selectedTemaId, setSelectedTemaId] = useState(null);
+  const [subtemas, setSubtemas] = useState([]);
+  const [selectedSubtema, setSelectedSubtema] = useState(null);
+
 
   useEffect(() => {
-    obtenerTemas();
+    const fetchTemas = async () => {
+      try {
+        const response = await axios.get('/api/temas');
+        setTemas(response.data);
+      } catch (error) {
+        console.error('Error fetching temas:', error);
+      }
+    };
+
+    fetchTemas();
   }, []);
 
-  const obtenerTemas = async () => {
-    try {
-      const respuesta = await axios.get('/api/temas');
-      setTemas(respuesta.data);
-    } catch (error) {
-      alert('Error al cargar los temas');
+  useEffect(() => {
+    if (selectedTemaId) {
+      const fetchSubtemas = async () => {
+        try {
+          const response = await axios.get(`/api/temas/${selectedTemaId._id}/subtemas`);
+          setSubtemas(response.data);
+        } catch (error) {
+          console.error('Error fetching subtemas:', error);
+        }
+      };
+
+      fetchSubtemas();
     }
+  }, [selectedTemaId]);
+
+
+  const handleSelectTema = (temaId) => {
+    setSelectedTemaId(temaId);
+    setSelectedSubtema(null);
   };
+
+  const handleSelectSubtema = (subtema) => {
+    setSelectedSubtema(subtema);
+  };
+
+
 
   return (
     <div>
-      <ThemeList themes={temas} onSelectTheme={setTemaSeleccionado} />
-      {temaSeleccionado && <SubthemeList themeId={temaSeleccionado._id} onSelectSubtheme={setSubtemaSeleccionado} />}
-      {subtemaSeleccionado && <RiddleTable subtheme={subtemaSeleccionado} />}
+      <ThemeList themes={temas} onSelectTheme={setSelectedTemaId} />
+      {selectedTemaId && <SubthemeList themeId={selectedTemaId._id} onSelectSubtheme={setSelectedSubtema} />}
+      {selectedSubtema && <RiddleTable  temaId={selectedTemaId._id} subtema={selectedSubtema.name} />}
     </div>
   );
 }
