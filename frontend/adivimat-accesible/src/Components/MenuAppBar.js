@@ -6,8 +6,11 @@ import {LogoutButton} from './LogoutButton';
 
 function MenuAppBar() {
   const [anchorEl, setAnchorEl] = useState(null);
-  const { user, logout, isAuthenticated } = useAuth();
+  //const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  const { state } = useAuth();
+  const { isAuthenticated, user, logout} = state;
 
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -20,6 +23,8 @@ function MenuAppBar() {
   const handleLogout = () => {
     handleMenuClose();
     logout();
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     navigate('/login');
   };
 
@@ -39,12 +44,12 @@ function MenuAppBar() {
         >
           <MenuItem onClick={handleMenuClose} component={Link} to="/">Inicio</MenuItem>
           <MenuItem onClick={handleMenuClose} component={Link} to="/about">Acerca de</MenuItem>
-          {isAuthenticated ? (
+          {isAuthenticated ? (  
             <>
-              {user.isAdmin && (
-                <MenuItem onClick={handleMenuClose} component={Link} to="/gestion">Gestión</MenuItem>
-              )}
-              <MenuItem component={Link} to="/logout" onClick={handleLogout}>Cerrar Sesión</MenuItem>
+            {user.isAdmin && (
+              <MenuItem onClick={handleMenuClose} component={Link} to="/gestion">Gestión</MenuItem>
+            )}
+            <MenuItem component={Link} to="/logout" onClick={handleLogout}>Cerrar Sesión</MenuItem>
             </>
           ) : (
             <MenuItem onClick={handleMenuClose} component={Link} to="/login">Iniciar sesión</MenuItem>
