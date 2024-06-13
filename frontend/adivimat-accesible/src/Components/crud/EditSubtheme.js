@@ -1,42 +1,80 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../utils/axiosConfig'
+import { useParams, useNavigate } from 'react-router-dom';
 
-function EditSubtheme({ themeId, subthemeId }) {
-  const [subthemeName, setSubthemeName] = useState('');
+const EditSubtheme = () => {
+    const { temaId, subtemaId } = useParams();
+    const navigate = useNavigate();
+    const [subtema, setSubtema] = useState({ nombre: '', descripcion: '' });
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchSubtheme = async () => {
-      try {
-        const response = await axios.get(`/api/temas/${themeId}/subtemas/${subthemeId}`);
-        setSubthemeName(response.data.name);
-      } catch (error) {
-        alert('Error al cargar el subtema');
-      }
+    useEffect(() => {
+        axios.get(`/api/temas/${temaId}/subtemas`)
+            .then(response => {
+                const subtemaEncontrado = response.data.find(st => st._id === subtemaId);
+                if (subtemaEncontrado) {
+                    setSubtema(subtemaEncontrado);
+                } else {
+                    alert('Subtema no encontrado');
+                    navigate(`/temas/${temaId}`);
+                }
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error('Error al obtener los subtemas:', error);
+                setLoading(false);
+            });
+    }, [temaId, subtemaId, navigate]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setSubtema({ ...subtema, [name]: value });
     };
 
-    fetchSubtheme();
-  }, [themeId, subthemeId]);
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        axios.put(`/api/temas/${temaId}/subtemas/${subtemaId}`, subtema)
+            .then(response => {
+                alert('Subtema actualizado exitosamente');
+                navigate(`/temas/${temaId}`);
+            })
+            .catch(error => {
+                console.error('Error al actualizar el subtema:', error);
+                alert('Error al actualizar el subtema');
+            });
+    };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    try {
-      await axios.put(`/api/temas/${themeId}/subtemas/${subthemeId}`, {
-        name: subthemeName
-      });
-      alert('Subtema actualizado con éxito!');
-    } catch (error) {
-      alert('Error al actualizar el subtema');
+    if (loading) {
+        return <div>Cargando...</div>;
     }
-  };
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <label>Nombre del Subtema:
-        <input type="text" value={subthemeName} onChange={e => setSubthemeName(e.target.value)} />
-      </label>
-      <button type="submit">Actualizar Subtema</button>
-    </form>
-  );
-}
+    return (
+        <div>
+            <h2>Editar Subtema</h2>
+            <form onSubmit={handleSubmit}>
+                <div>
+                    <label>Nombre:</label>
+                    <input
+                        type="text"
+                        name="nombre"
+                        value={subtema.nombre}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                <div>
+                    <label>Descripción:</label>
+                    <textarea
+                        name="descripcion"
+                        value={subtema.descripcion}
+                        onChange={handleChange}
+                        required
+                    />
+                </div>
+                <button type="submit">Guardar Cambios</button>
+            </form>
+        </div>
+    );
+};
 
 export default EditSubtheme;
