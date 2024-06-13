@@ -4,6 +4,10 @@
  ## Curso de MongoDB
 https://openwebinars.net/academia/aprende/mongodb/
 
+* **Documentación oficial de Mongo**: <https://docs.mongo.org>.
+* **Mongo Query Language**: <https://www.mongodb.com/docs/manual/tutorial/query-documents/>.
+
+
 Con este curso he ampliado mis conocimientos de MongoDB, a parte de los adquiridos en clase.
 
 
@@ -23,3 +27,15 @@ https://plantuml.com/es/
 
 Con esta herramienta he aprendido a crear diagramas desde VScode, de forma accesible para mí a partir de código y no de forma visual con herramientas como Modelio.
 
+## Tutoriales de Express y MongoDB 
+https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/mongoose.
+
+https://www.freecodecamp.org/news/build-a-restful-api-using-node-express-and-mongodb/
+
+[documentación de React](https://reactjs.org/).
+
+[ARIA live](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Live_Regions).
+
+[MUI](https://mui.com/)
+
+\pagebreak

@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import axios from '../../utils/axiosConfig'
+import axios from '../utils/axiosConfig';
 
-function AddTheme() {
-  const [temaName, setTemaName] = useState('');
+function AddTheme({ onClose }) {
+  const [themeName, setThemeName] = useState('');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post('/api/temas', {
-        name: temaName
+      await axios.post('/api/temas', {
+        name: themeName
       });
       alert('Tema añadido con éxito!');
-      setTemaName('');
+      setThemeName('');
+      onClose(); // Cerramos el formulario después de añadir
     } catch (error) {
       alert('Error al añadir el tema');
     }
@@ -20,9 +21,10 @@ function AddTheme() {
   return (
     <form onSubmit={handleSubmit}>
       <label>Nombre del Tema:
-        <input type="text" value={themeName} onChange={e => setThemeName(e.target.value)} />
+        <input type="text" value={themeName} onChange={e => setThemeName(e.target.value)} required />
       </label>
       <button type="submit">Añadir Tema</button>
+      <button type="button" onClick={onClose}>Cancelar</button>
     </form>
   );
 }

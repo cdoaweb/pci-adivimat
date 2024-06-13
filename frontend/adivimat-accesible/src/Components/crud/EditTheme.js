@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from '../../utils/axiosConfig'
+import axios from '../utils/axiosConfig';
 
 function EditTheme({ themeId }) {
   const [themeName, setThemeName] = useState('');
@@ -32,7 +32,7 @@ function EditTheme({ themeId }) {
   return (
     <form onSubmit={handleSubmit}>
       <label>Nombre del Tema:
-        <input type="text" value={themeName} onChange={e => setThemeName(e.target.value)} />
+        <input type="text" value={themeName} onChange={e => setThemeName(e.target.value)} required />
       </label>
       <button type="submit">Actualizar Tema</button>
     </form>

@@ -3,11 +3,14 @@ import axios from './utils/axiosConfig';
 import RiddleSelector from './selector/RiddleSelector';
 
 function Home() {
+  // Estados para almacenar los temas, el ID del tema seleccionado, los subtemas, el subtema seleccionado y los anuncios de accesibilidad.
   const [temas, setTemas] = useState([]);
   const [selectedTemaId, setSelectedTemaId] = useState(null);
   const [subtemas, setSubtemas] = useState([]);
   const [selectedSubtema, setSelectedSubtema] = useState(null);
+  const [announcement, setAnnouncement] = useState('');
 
+  // useEffect para obtener los temas al montar el componente
   useEffect(() => {
     const fetchTemas = async () => {
       try {
@@ -21,6 +24,7 @@ function Home() {
     fetchTemas();
   }, []);
 
+  // useEffect para obtener los subtemas cuando se selecciona un tema
   useEffect(() => {
     if (selectedTemaId) {
       const fetchSubtemas = async () => {
@@ -36,13 +40,18 @@ function Home() {
     }
   }, [selectedTemaId]);
 
-  const handleSelectTema = (temaId) => {
+  // Manejar la selección de un tema
+  const handleSelectTema = (event) => {
+    const temaId = event.target.value;
     setSelectedTemaId(temaId);
     setSelectedSubtema(null);
+    setAnnouncement('Tema seleccionado');
   };
 
+  // Manejar la selección de un subtema
   const handleSelectSubtema = (subtema) => {
     setSelectedSubtema(subtema);
+    setAnnouncement(`Subtema ${subtema} seleccionado`);
   };
 
   return (
@@ -51,13 +60,14 @@ function Home() {
       <div>
         <h2>Temas</h2>
         {temas.length > 0 ? (
-          <ul>
+          <select onChange={handleSelectTema} value={selectedTemaId || ''}>
+            <option value="" disabled>Selecciona un tema</option>
             {temas.map((tema) => (
-              <li key={tema._id} onClick={() => handleSelectTema(tema._id)}>
+              <option key={tema._id} value={tema._id}>
                 {tema.tema}
-              </li>
+              </option>
             ))}
-          </ul>
+          </select>
         ) : (
           <p>Cargando temas...</p>
         )}
@@ -69,8 +79,13 @@ function Home() {
           {subtemas.length > 0 ? (
             <ul>
               {subtemas.map((subtema) => (
-                <li key={subtema.name} onClick={() => handleSelectSubtema(subtema.name)}>
-                  {subtema.name}
+                <li key={subtema.name}>
+                  <button
+                    onClick={() => handleSelectSubtema(subtema.name)}
+                    aria-pressed={selectedSubtema === subtema.name}
+                  >
+                    {subtema.name}
+                  </button>
                 </li>
               ))}
             </ul>
@@ -86,6 +101,11 @@ function Home() {
           <RiddleSelector temaId={selectedTemaId} subtema={selectedSubtema} />
         </div>
       )}
+
+      {/* Elemento aria-live para anunciar cambios dinámicos */}
+      <div aria-live="polite" style={{ position: 'absolute', left: '-9999px' }}>
+        {announcement}
+      </div>
     </div>
   );
 }

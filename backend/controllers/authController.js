@@ -35,9 +35,9 @@ exports.login = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
     console.log(password, user.password);
+
     // Comprobar que la contraseña sea correcta
     const isMatch = await bcrypt.compare(password, user.password);
-    
     console.log(isMatch);
 
     if (!isMatch) {
@@ -55,11 +55,15 @@ exports.login = async (req, res) => {
 
 exports.isAdmin = (req, res, next) => {
   try {
+    // Obtener el token del encabezado de autorización
     const token = req.headers.authorization.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Verificar si el usuario es admin
     if (!decoded.isAdmin) {
       return res.status(403).json({ message: 'Access denied' });
     }
+
     req.user = decoded;
     next();
   } catch (error) {
