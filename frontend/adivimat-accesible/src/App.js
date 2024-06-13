@@ -2,14 +2,14 @@ import logo from './logo.svg';
 import './App.css';
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import PrivateRoute from './components/PrivateRoute';
-import Login from './components/Login';
-import Register from './components/Register';
-import Home from './components/Home';
-import About from './components/About';
-import MenuAppBar from './components/MenuAppBar';
-import Gestion from './components/Gestion';
-import Footer from './components/Footer';
+import PrivateRoute from './Components/PrivateRoute';
+import Login from './Components/Login';
+import Register from './Components/Register';
+import Home from './Components/Home';
+import About from './Components/About';
+import MenuAppBar from './Components/MenuAppBar';
+import Gestion from './Components/Gestion';
+import Footer from './Components/Footer';
 import { useAuth } from './context/AuthProvider';
 
 function App() {
