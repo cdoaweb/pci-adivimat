@@ -1,0 +1,58 @@
+@startuml
+
+actor Usuario as U
+actor Administrador as A
+
+rectangle Sistema {
+  (Registrarse) as registrarse
+  (Iniciar Sesión) as iniciarSesion
+  (Cerrar Sesión) as cerrarSesion
+  (Ver Temas) as verTemas
+  (Crear Tema) as crearTema
+  (Actualizar Tema) as actualizarTema
+  (Ver Subtemas) as verSubtemas
+  (Crear Subtema) as crearSubtema
+  (Actualizar Subtema) as actualizarSubtema
+  (Eliminar Subtema) as eliminarSubtema
+  (Ver Adivinanzas) as verAdivinanzas
+  (Crear Adivinanza) as crearAdivinanza
+  (Actualizar Adivinanza) as actualizarAdivinanza
+  (Eliminar Adivinanza) as eliminarAdivinanza
+  (Resolver Adivinanza) as resolverAdivinanza
+}
+
+U --> verTemas : "Ver temas disponibles"
+U --> verSubtemas : "Ver subtemas de un tema"
+U --> verAdivinanzas : "Ver adivinanzas de un subtema"
+U --> resolverAdivinanza : "Resolver adivinanza"
+
+A --> registrarse : "Registro de usuario"
+A --> iniciarSesion : "Inicio de sesión"
+A --> cerrarSesion : "Cerrar sesión"
+A --> crearTema : "Crear nuevo tema"
+A --> actualizarTema : "Actualizar tema"
+A --> crearSubtema : "Crear nuevo subtema"
+A --> actualizarSubtema : "Actualizar subtema"
+A --> eliminarSubtema : "Eliminar subtema"
+A --> crearAdivinanza : "Crear nueva adivinanza"
+A --> actualizarAdivinanza : "Actualizar adivinanza"
+A --> eliminarAdivinanza : "Eliminar adivinanza"
+
+registrarse --> iniciarSesion : "Inicio de sesión tras registro"
+iniciarSesion --> verTemas
+verTemas --> verSubtemas
+verSubtemas --> verAdivinanzas
+verAdivinanzas --> resolverAdivinanza : "Resolver adivinanza"
+resolverAdivinanza --> verAdivinanzas : "Volver a ver adivinanzas"
+verAdivinanzas --> verTemas
+
+crearTema --> verTemas
+actualizarTema --> verTemas
+crearSubtema --> verSubtemas
+actualizarSubtema --> verSubtemas
+eliminarSubtema --> verSubtemas
+crearAdivinanza --> verAdivinanzas
+actualizarAdivinanza --> verAdivinanzas
+eliminarAdivinanza --> verAdivinanzas
+
+@enduml
