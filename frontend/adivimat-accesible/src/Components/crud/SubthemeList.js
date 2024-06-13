@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from '../utils/axiosConfig'
+import EditSubtheme from './EditSubtheme';
+import AddSubtheme from './AddSubtheme';
+import axios from '../utils/axiosConfig';
 
-function SubthemeList({ themeId, onSelectSubtheme }) {
+function SubthemeList({ themeId, subtema, onSelectSubtheme }) {
   const [subthemes, setSubthemes] = useState([]);
 
   useEffect(() => {
@@ -19,9 +21,12 @@ function SubthemeList({ themeId, onSelectSubtheme }) {
 
   return (
     <ul>
+          <h2>Subtemas</h2>
       {subthemes.map(subtheme => (
         <li key={subtheme._id} onClick={() => onSelectSubtheme(subtheme)}>
           {subtheme.name}
+          <button onClick={() => EditSubtheme(subtema.EditSubtheme)}>Editar El Subtema</button>
+          <button onClick={() => AddSubtheme(subtema.AddSubtheme)}>Añadir un nuevo Subtema</button>
         </li>
       ))}
     </ul>

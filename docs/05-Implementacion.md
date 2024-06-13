@@ -140,4 +140,13 @@ AdivinanzaSchema.methods.verificarRespuesta = function (respuestaUsuario) {
 module.exports = mongoose.model('Adivinanza', AdivinanzaSchema);
 ```
 
+### .env
+ADMIN_CODE= (El proporcionado)
+JWT_SECRET=(El proporcionado)
+MONGO_URI=mongodb://usuario:contraseña@localhost:27017/adivimat?authSource=admin
+BACKEND_PORT=8000
 
+
+
+
+\pagebreak

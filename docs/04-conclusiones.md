@@ -1,3 +1,0 @@
-# Conclusiones
-
-Cosas que hemos aprendido nuevas, cosas que haríamos de otra manera con lo que sabemos, qué haremos después...
