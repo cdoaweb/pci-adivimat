@@ -11,6 +11,8 @@ import MenuAppBar from './Components/MenuAppBar';
 import Gestion from './Components/Gestion';
 import Footer from './Components/Footer';
 import { useAuth } from './context/AuthProvider';
+import EditTheme from './Components/crud/EditTheme';
+import AddTheme from './Components/crud/AddTheme';
 
 function App() {
   const { state } = useAuth();
@@ -32,6 +34,17 @@ function App() {
               <Gestion />
             </PrivateRoute>
           } />
+          <Route path="/temas/:themeId/editar" element={
+            <PrivateRoute>
+              <EditTheme />
+              
+            </PrivateRoute>
+          }/>
+          <Route path="/temas/:themeId/añadir" element={
+                <PrivateRoute>
+                  <AddTheme />
+                  </PrivateRoute>
+          }/>
         </Routes>
       </main>
       <Footer /> {Footer }

@@ -1,3 +1,33 @@
+\pagebreak
+
+# Diagrama de la base de datos
+
+![Diagrama Entidad Relación](Diagrama%20entidad%20relación.png)
+
+```plantuml
+@startuml Diagrama entidad relación
+
+entity Tema {
+    +id: int
+    +tema: string
+}
+
+entity Subtema {
+    +name: string
+}
+
+entity Adivinanza {
+    +id: int
+    +pregunta: string
+    +respuesta: string
+}
+
+Tema ||--o Subtema : tiene
+Subtema ||--o Adivinanza : tiene
+
+@enduml
+```
+
 ## Entidades
 - **Tema**
 - **Subtema**

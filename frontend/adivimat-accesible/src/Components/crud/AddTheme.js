@@ -8,7 +8,7 @@ function AddTheme({ onClose }) {
     event.preventDefault();
     try {
       await axios.post('/api/temas', {
-        name: themeName
+        tema: themeName
       });
       alert('Tema añadido con éxito!');
       setThemeName('');

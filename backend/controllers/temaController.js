@@ -20,6 +20,16 @@ exports.getTemas = async (req, res) => {
   }
 };
 
+exports.getTema = async (req, res) => {
+  try {
+    const { temaId } = req.params;
+    const temas = await Tema.findById(temaId);
+    res.json(temas);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.updateTema = async (req, res) => {
   const { temaId } = req.params;
   try {
