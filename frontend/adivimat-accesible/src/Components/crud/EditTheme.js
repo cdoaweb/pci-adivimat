@@ -24,7 +24,7 @@ function EditTheme() {
     event.preventDefault();
     try {
       await axios.put(`/api/temas/${themeId}`, {
-        name: themeName
+        tema: themeName
       });
       alert('Tema actualizado con éxito!');
     } catch (error) {

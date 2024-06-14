@@ -4,6 +4,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PrivateRoute from './Components/PrivateRoute';
 import Login from './Components/Login';
+import Logout from './Components/Logout';
 import Register from './Components/Register';
 import Home from './Components/Home';
 import About from './Components/About';
@@ -40,11 +41,12 @@ function App() {
               
             </PrivateRoute>
           }/>
-          <Route path="/temas/:themeId/añadir" element={
+          <Route path="/temas/nuevo" element={
                 <PrivateRoute>
                   <AddTheme />
                   </PrivateRoute>
           }/>
+          <Route path="/logout" element={<Logout />} />
         </Routes>
       </main>
       <Footer /> {Footer }
