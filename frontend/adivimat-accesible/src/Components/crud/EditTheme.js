@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import {useParams} from "react-router-dom"
 import axios from '../utils/axiosConfig';
 
-function EditTheme({ themeId }) {
+function EditTheme() {
   const [themeName, setThemeName] = useState('');
+  const { themeId } = useParams();
 
   useEffect(() => {
-    const fetchTheme = async () => {
-      try {
+    
+    const fetchTheme = async () => {      
+      try {        
         const response = await axios.get(`/api/temas/${themeId}`);
-        setThemeName(response.data.name);
+        setThemeName(response.data.tema);
       } catch (error) {
         alert('Error al cargar el tema');
       }
     };
-
+    
     fetchTheme();
   }, [themeId]);
 
