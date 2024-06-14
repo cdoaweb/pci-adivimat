@@ -39,7 +39,7 @@ function LoginForm() {
       <form className="login-form" onSubmit={handleSubmit}>
         <h2>Iniciar Sesión</h2>
         <div className="form-control">
-          <label htmlFor="usernameOrEmail">Nombre de usuario o correo electrónico</label>
+          <label htmlFor="usernameOrEmail">Correo electrónico</label>
           <input
             type="text"
             name="usernameOrEmail"
