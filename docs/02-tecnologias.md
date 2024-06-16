@@ -80,7 +80,7 @@
 - **Qué es**: React Router es una biblioteca para manejar la navegación y las rutas en aplicaciones React.
 - **Por qué lo uso**: Permite definir rutas y gestionar la navegación de manera sencilla y eficiente, mejorando la experiencia de usuario en aplicaciones de una sola página (SPA).
 
-###Axios
+### Axios
 - **Qué es**: Axios es una biblioteca para hacer solicitudes HTTP desde el navegador.
 - **Por qué lo uso**: Facilita la comunicación con el backend, permitiendo realizar peticiones API de manera sencilla y con soporte para promesas.
 
