@@ -1,4 +1,4 @@
-@startuml
+@startuml Caso de uso Backend
 
 actor Usuario as U
 actor Administrador as A

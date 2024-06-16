@@ -1,6 +1,6 @@
 # Conclusiones
 
-A lo largo de este proyecto, he integrado un conjunto robusto de tecnologías que, en conjunto, han permitido la creación de una aplicación web eficiente, segura y escalable. La elección de herramientas específicas para el back-end y el front-end ha sido crucial para lograr estos objetivos.
+A lo largo de este proyecto, he integrado un conjunto robusto de tecnologías que, en conjunto, han permitido la creación de una aplicación web eficiente, segura, escalable y accesible. La elección de herramientas específicas para el back-end y el front-end ha sido crucial para lograr estos objetivos.
 
 ## Tecnologías Back-end
 

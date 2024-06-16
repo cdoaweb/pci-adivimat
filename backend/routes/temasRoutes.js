@@ -9,6 +9,7 @@ router.use(express.json());
 // Temas
 router.post('/temas', temaController.createTema);
 router.get('/temas', temaController.getTemas);
+router.get('/temas/:temaId', temaController.getTema);
 router.put('/temas/:temaId', temaController.updateTema);
 
 // Subtemas

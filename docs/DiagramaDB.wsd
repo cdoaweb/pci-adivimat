@@ -1,4 +1,5 @@
-@startuml
+@startuml Diagrama entidad relación
+
 entity Tema {
     +id: int
     +tema: string
@@ -14,6 +15,7 @@ entity Adivinanza {
     +respuesta: string
 }
 
-Tema ||--o{ Subtema : tiene
-Subtema ||--o{ Adivinanza : tiene
+Tema ||--o Subtema : tiene
+Subtema ||--o Adivinanza : tiene
+
 @enduml

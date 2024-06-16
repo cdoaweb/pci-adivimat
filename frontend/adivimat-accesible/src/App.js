@@ -2,15 +2,18 @@ import logo from './logo.svg';
 import './App.css';
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import PrivateRoute from './components/PrivateRoute';
-import Login from './components/Login';
-import Register from './components/Register';
-import Home from './components/Home';
-import About from './components/About';
-import MenuAppBar from './components/MenuAppBar';
-import Gestion from './components/Gestion';
-import Footer from './components/Footer';
+import PrivateRoute from './Components/PrivateRoute';
+import Login from './Components/Login';
+import Logout from './Components/Logout';
+import Register from './Components/Register';
+import Home from './Components/Home';
+import About from './Components/About';
+import MenuAppBar from './Components/MenuAppBar';
+import Gestion from './Components/Gestion';
+import Footer from './Components/Footer';
 import { useAuth } from './context/AuthProvider';
+import EditTheme from './Components/crud/EditTheme';
+import AddTheme from './Components/crud/AddTheme';
 
 function App() {
   const { state } = useAuth();
@@ -32,6 +35,18 @@ function App() {
               <Gestion />
             </PrivateRoute>
           } />
+          <Route path="/temas/:themeId/editar" element={
+            <PrivateRoute>
+              <EditTheme />
+              
+            </PrivateRoute>
+          }/>
+          <Route path="/temas/nuevo" element={
+                <PrivateRoute>
+                  <AddTheme />
+                  </PrivateRoute>
+          }/>
+          <Route path="/logout" element={<Logout />} />
         </Routes>
       </main>
       <Footer /> {Footer }

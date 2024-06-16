@@ -1,6 +1,76 @@
+\pagebreak
+
 # Descripción de Diagramas
 
 ## Backend
+
+![Caso de uso backend](caso-de-uso-backend.png)
+
+```plantuml
+@startuml Caso de uso Backend
+
+actor Usuario as U
+actor Administrador as A
+
+rectangle Sistema {
+  (Registrarse) as registrarse
+  (Iniciar Sesión) as iniciarSesion
+  (Cerrar Sesión) as cerrarSesion
+  (Ver Temas) as verTemas
+  (Crear Tema) as crearTema
+  (Actualizar Tema) as actualizarTema
+  (Ver Subtemas) as verSubtemas
+  (Crear Subtema) as crearSubtema
+  (Actualizar Subtema) as actualizarSubtema
+  (Eliminar Subtema) as eliminarSubtema
+  (Ver Adivinanzas) as verAdivinanzas
+  (Crear Adivinanza) as crearAdivinanza
+  (Actualizar Adivinanza) as actualizarAdivinanza
+  (Eliminar Adivinanza) as eliminarAdivinanza
+  (Resolver Adivinanza) as resolverAdivinanza
+  (Ver Mongo Express) as verMongoExpress
+}
+
+U --> verTemas : "Ver temas disponibles"
+U --> verSubtemas : "Ver subtemas de un tema"
+U --> verAdivinanzas : "Ver adivinanzas de un subtema"
+U --> resolverAdivinanza : "Resolver adivinanza"
+
+A --> registrarse : "Registro de usuario"
+A --> iniciarSesion : "Inicio de sesión"
+A --> cerrarSesion : "Cerrar sesión"
+A --> crearTema : "Crear nuevo tema"
+A --> actualizarTema : "Actualizar tema"
+A --> crearSubtema : "Crear nuevo subtema"
+A --> actualizarSubtema : "Actualizar subtema"
+A --> eliminarSubtema : "Eliminar subtema"
+A --> crearAdivinanza : "Crear nueva adivinanza"
+A --> actualizarAdivinanza : "Actualizar adivinanza"
+A --> eliminarAdivinanza : "Eliminar adivinanza"
+A --> verMongoExpress : "Acceder a Mongo Express"
+
+registrarse --> iniciarSesion : "Inicio de sesión tras registro"
+iniciarSesion --> verTemas
+verTemas --> verSubtemas
+verSubtemas --> verAdivinanzas
+verAdivinanzas --> resolverAdivinanza : "Resolver adivinanza"
+resolverAdivinanza --> verAdivinanzas : "Volver a ver adivinanzas"
+verAdivinanzas --> verTemas
+
+crearTema --> verTemas
+actualizarTema --> verTemas
+crearSubtema --> verSubtemas
+actualizarSubtema --> verSubtemas
+eliminarSubtema --> verSubtemas
+crearAdivinanza --> verAdivinanzas
+actualizarAdivinanza --> verAdivinanzas
+eliminarAdivinanza --> verAdivinanzas
+
+@enduml
+
+```
+
+
 1. **Usuarios**:
    - **Usuario** puede:
      - Ver temas disponibles
@@ -22,6 +92,70 @@
    - Facilita a los usuarios la visualización de temas, subtemas y adivinanzas, así como la resolución de estas últimas.
 
 ## Frontend
+
+![Caso de uso frontend](caso-de-uso-frontend.png)
+
+```plantuml
+@startuml
+
+actor Usuario as U
+actor Administrador as A
+
+rectangle Sistema {
+  (Registrarse) as registrarse
+  (Iniciar Sesión) as iniciarSesion
+  (Cerrar Sesión) as cerrarSesion
+  (Ver Temas) as verTemas
+  (Crear Tema) as crearTema
+  (Actualizar Tema) as actualizarTema
+  (Ver Subtemas) as verSubtemas
+  (Crear Subtema) as crearSubtema
+  (Actualizar Subtema) as actualizarSubtema
+  (Eliminar Subtema) as eliminarSubtema
+  (Ver Adivinanzas) as verAdivinanzas
+  (Crear Adivinanza) as crearAdivinanza
+  (Actualizar Adivinanza) as actualizarAdivinanza
+  (Eliminar Adivinanza) as eliminarAdivinanza
+  (Resolver Adivinanza) as resolverAdivinanza
+}
+
+U --> verTemas : "Ver temas disponibles"
+U --> verSubtemas : "Ver subtemas de un tema"
+U --> verAdivinanzas : "Ver adivinanzas de un subtema"
+U --> resolverAdivinanza : "Resolver adivinanza"
+
+A --> registrarse : "Registro de usuario"
+A --> iniciarSesion : "Inicio de sesión"
+A --> cerrarSesion : "Cerrar sesión"
+A --> crearTema : "Crear nuevo tema"
+A --> actualizarTema : "Actualizar tema"
+A --> crearSubtema : "Crear nuevo subtema"
+A --> actualizarSubtema : "Actualizar subtema"
+A --> eliminarSubtema : "Eliminar subtema"
+A --> crearAdivinanza : "Crear nueva adivinanza"
+A --> actualizarAdivinanza : "Actualizar adivinanza"
+A --> eliminarAdivinanza : "Eliminar adivinanza"
+
+registrarse --> iniciarSesion : "Inicio de sesión tras registro"
+iniciarSesion --> verTemas
+verTemas --> verSubtemas
+verSubtemas --> verAdivinanzas
+verAdivinanzas --> resolverAdivinanza : "Resolver adivinanza"
+resolverAdivinanza --> verAdivinanzas : "Volver a ver adivinanzas"
+verAdivinanzas --> verTemas
+
+crearTema --> verTemas
+actualizarTema --> verTemas
+crearSubtema --> verSubtemas
+actualizarSubtema --> verSubtemas
+eliminarSubtema --> verSubtemas
+crearAdivinanza --> verAdivinanzas
+actualizarAdivinanza --> verAdivinanzas
+eliminarAdivinanza --> verAdivinanzas
+
+@enduml
+
+```
 
 ### Actores
 - **Usuario**: Interactúa con las funcionalidades de ver y resolver.
