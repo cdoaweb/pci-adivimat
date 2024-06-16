@@ -2,34 +2,34 @@ import React, { useState, useEffect } from 'react';
 import axios from '../utils/axiosConfig'
 
 function AddSubtheme() {
-  const [themes, setThemes] = useState([]);
-  const [selectedTheme, setSelectedTheme] = useState('');
-  const [subthemeName, setSubthemeName] = useState('');
+  const [temas, tema, setTemas] = useState([]);
+  const [selectedTema, setSelectedTema] = useState('');
+  const [subtemaName, setSubtemaName] = useState('');
 
   useEffect(() => {
-    const fetchThemes = async () => {
+    const fetchTemas = async () => {
       try {
         const response = await axios.get('/api/temas');
-        setThemes(response.data);
+        setTemas(response.data);
       } catch (error) {
         alert('Error al cargar los temas');
       }
     };
-    fetchThemes();
+    fetchTemas();
   }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!selectedTheme) {
+    if (!selectedTema) {
       alert('Por favor, selecciona un tema');
       return;
     }
     try {
-      const response = await axios.post(`/api/temas/${selectedTheme}/subtemas`, {
-        name: subthemeName
+      const response = await axios.post(`/api/temas/${selectedTema}/subtemas`, {
+        name: subtemaName
       });
       alert('Subtema añadido con éxito!');
-      setSubthemeName('');
+      setSubtemaName('');
     } catch (error) {
       alert('Error al añadir el subtema');
     }
@@ -38,15 +38,15 @@ function AddSubtheme() {
   return (
     <form onSubmit={handleSubmit}>
       <label>Tema:
-        <select value={selectedTheme} onChange={e => setSelectedTheme(e.target.value)} required>
+        <select value={selectedTema} onChange={e => setSelectedTema(e.target.value)} required>
           <option value="">Seleccione un tema</option>
-          {themes.map(theme => (
-            <option key={theme._id} value={theme._id}>{theme.name}</option>
+          {temas.map(theme => (
+            <option key={tema._id} value={tema._id}>{tema.tema}</option>
           ))}
         </select>
       </label>
       <label>Nombre del Subtema:
-        <input type="text" value={subthemeName} onChange={e => setSubthemeName(e.target.value)} required />
+        <input type="text" value={subtemaName} onChange={e => setSubtemaName(e.target.value)} required />
       </label>
       <button type="submit">Añadir Subtema</button>
     </form>
