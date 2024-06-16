@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import EditRiddle from './EditRiddle';
 import AddRiddle from './AddRiddle';
 import axios from '../utils/axiosConfig';
+import EliminarAdivinanza from './EliminarAdivinanza';
 
 function RiddleTable({ temaId, subtema }) {
   const [adivinanzas, setAdivinanzas] = useState([]);
   const [selectedRiddle, setSelectedRiddle] = useState(null); // Estado para la adivinanza seleccionada
   const [isAdding, setIsAdding] = useState(false); // Estado para controlar el formulario de añadir
+  const [isDeleting, setIsDeleting] = useState(null); // Estado para controlar el formulario de eliminar
 
   // Función para obtener las adivinanzas del backend
   const fetchAdivinanzas = async () => {
@@ -23,33 +25,22 @@ function RiddleTable({ temaId, subtema }) {
     fetchAdivinanzas();
   }, [subtema, temaId]);
 
-  // Función para eliminar una adivinanza
-  const eliminarAdivinanza = async (idAdivinanza) => {
-    if (window.confirm('¿Estás seguro de querer eliminar esta adivinanza?')) {
-      try {
-        await axios.delete(`/api/temas/${temaId}/subtemas/${subtema}/adivinanzas/${idAdivinanza}`);
-        // Actualiza el estado para reflejar la eliminación
-        setAdivinanzas(adivinanzas.filter(a => a._id !== idAdivinanza));
-      } catch (error) {
-        alert('Error al eliminar la adivinanza');
-      }
-    }
-  };
-
-  // Función para seleccionar una adivinanza para editar
-  const editarAdivinanza = (adivinanza) => {
-    setSelectedRiddle(adivinanza);
-  };
-
-  // Función para mostrar el formulario de añadir adivinanza
-  const handleAddClick = () => {
-    setIsAdding(true);
-  };
-
   // Función para cerrar el formulario de añadir adivinanza y refrescar la lista
   const handleAddClose = () => {
     setIsAdding(false);
     fetchAdivinanzas(); // Refrescar la lista de adivinanzas después de añadir una nueva
+  };
+
+  // Función para cerrar el formulario de editar adivinanza y refrescar la lista
+  const handleEditClose = () => {
+    setSelectedRiddle(null);
+    fetchAdivinanzas(); // Refrescar la lista de adivinanzas después de editar una
+  };
+
+  // Función para cerrar el formulario de eliminar adivinanza y refrescar la lista
+  const handleDeleteClose = () => {
+    setIsDeleting(null);
+    fetchAdivinanzas(); // Refrescar la lista de adivinanzas después de eliminar una
   };
 
   return (
@@ -68,14 +59,14 @@ function RiddleTable({ temaId, subtema }) {
               <td>{adivinanza.pregunta}</td>
               <td>{adivinanza.respuesta}</td>
               <td>
-                <button onClick={() => editarAdivinanza(adivinanza)}>Editar</button>
-                <button onClick={() => eliminarAdivinanza(adivinanza._id)}>Eliminar</button>
+                <button onClick={() => setSelectedRiddle(adivinanza)}>Editar</button>
+                <button onClick={() => setIsDeleting(adivinanza)}>Eliminar</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <button onClick={handleAddClick}>Añadir Adivinanza</button>
+      <button onClick={() => setIsAdding(true)}>Añadir nueva adivinanza</button>
 
       {isAdding && (
         <div>
@@ -85,7 +76,23 @@ function RiddleTable({ temaId, subtema }) {
 
       {selectedRiddle && (
         <div>
-          <EditRiddle temaId={temaId} subtemaId={subtema} riddleId={selectedRiddle._id} />
+          <EditRiddle
+            temaId={temaId}
+            subtemaId={subtema}
+            adivinanzaId={selectedRiddle._id}
+            onClose={handleEditClose}
+          />
+        </div>
+      )}
+
+      {isDeleting && (
+        <div>
+          <EliminarAdivinanza
+            temaId={temaId}
+            subtemaId={subtema}
+            adivinanzaId={isDeleting._id}
+            onClose={handleDeleteClose}
+          />
         </div>
       )}
     </div>

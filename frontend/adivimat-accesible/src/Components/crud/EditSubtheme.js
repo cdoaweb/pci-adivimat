@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 const EditSubtheme = () => {
     const { temaId, subtemaId } = useParams();
     const navigate = useNavigate();
-    const [subtema, setSubtema] = useState({ nombre: '', descripcion: '' });
+    const [subtema, setSubtema] = useState({ name: '' });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -57,16 +57,7 @@ const EditSubtheme = () => {
                     <input
                         type="text"
                         name="nombre"
-                        value={subtema.nombre}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Descripción:</label>
-                    <textarea
-                        name="descripcion"
-                        value={subtema.descripcion}
+                        value={subtema.name}
                         onChange={handleChange}
                         required
                     />

@@ -14,6 +14,8 @@ import Footer from './Components/Footer';
 import { useAuth } from './context/AuthProvider';
 import EditTheme from './Components/crud/EditTheme';
 import AddTheme from './Components/crud/AddTheme';
+import EditSubtheme from './Components/crud/EditSubtheme';
+import AddSubtheme from './Components/crud/AddSubtheme';
 
 function App() {
   const { state } = useAuth();
@@ -38,7 +40,6 @@ function App() {
           <Route path="/temas/:themeId/editar" element={
             <PrivateRoute>
               <EditTheme />
-              
             </PrivateRoute>
           }/>
           <Route path="/temas/nuevo" element={
@@ -46,6 +47,19 @@ function App() {
                   <AddTheme />
                   </PrivateRoute>
           }/>
+
+<Route path="/temas/:temaId/subtemas/:subtemaId/editar" element={
+            <PrivateRoute>
+              <EditSubtheme />
+            </PrivateRoute>
+          }/>
+
+<Route path="/temas/:temaId/subtemas/nuevo" element={
+            <PrivateRoute>
+              <AddSubtheme />
+            </PrivateRoute>
+          }/>
+
           <Route path="/logout" element={<Logout />} />
         </Routes>
       </main>
