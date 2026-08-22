@@ -6,6 +6,6 @@
 **/*.tsbuildinfo
 **/.git
 **/.env
+**/.env.local
 **/npm-debug.log*
-frontend
 docs

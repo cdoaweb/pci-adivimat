@@ -63,6 +63,27 @@ services:
       retries: 5
       start_period: 15s
 
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/adivimat-accesible/Dockerfile
+      args:
+        # El navegador del usuario llama al backend por el puerto publicado en
+        # el host, no por el nombre de servicio interno de docker.
+        VITE_API_URL: ${VITE_API_URL}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - '${FRONTEND_PORT}:80'
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q --spider http://127.0.0.1/ || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   mongo-express:
     image: mongo-express:1.0.2
     restart: unless-stopped

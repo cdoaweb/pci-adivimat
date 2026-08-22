@@ -42,32 +42,42 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 docker compose up -d --build
 ```
 
-Levanta tres servicios:
+Levanta cuatro servicios:
 
 | Servicio        | URL                     | Descripción                        |
 | --------------- | ----------------------- | ---------------------------------- |
+| `frontend`      | http://localhost:3000   | Cliente web (build de Vite servido por nginx) |
 | `backend`       | http://localhost:4000   | API REST (`/health` para comprobar) |
 | `mongo`         | localhost:27017         | Base de datos, con volumen persistente |
 | `mongo-express` | http://localhost:8082   | Visor web de la base de datos      |
 
-El backend usa el puerto **4000**, no el 3000, porque el 3000 lo ocupa el
-servidor de desarrollo de React.
+El backend usa el puerto **4000**, no el 3000, porque el 3000 es el del
+cliente web.
 
-### 3. Levantar el frontend
+### 3. Frontend en modo desarrollo (opcional)
+
+`docker compose up` ya sirve el frontend compilado. Para desarrollar con
+recarga en caliente, para ese contenedor y levanta Vite:
 
 ```bash
-cd frontend/adivimat-accesible && npm install && npm start
+docker compose stop frontend
 ```
 
-Queda en http://localhost:3000. La URL de la API se configura con
-`REACT_APP_API_URL` en `frontend/adivimat-accesible/.env.local`.
+```bash
+npm run dev:frontend
+```
+
+Queda igualmente en http://localhost:3000. La URL de la API se configura con
+`VITE_API_URL` en `frontend/adivimat-accesible/.env.local`. En Vite solo las
+variables con prefijo `VITE_` llegan al bundle, y se incrustan en tiempo de
+compilación, no de ejecución.
 
 ## Estructura
 
 ```
 shared/    Tipos y lógica de dominio compartidos (sin dependencias de plataforma)
 backend/   API REST en TypeScript (Express + Mongoose)
-frontend/  Cliente web en React
+frontend/  Cliente web en React + TypeScript (Vite)
 ```
 
 `shared/` es neutral de plataforma a propósito: no importa `mongoose`, `express`
@@ -90,4 +100,8 @@ npm run build
 
 ```bash
 npm run typecheck
+```
+
+```bash
+npm test
 ```
