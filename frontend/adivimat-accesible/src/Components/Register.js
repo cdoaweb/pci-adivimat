@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { validateEmail } from '../validation/validation';
+import axios from './utils/axiosConfig';
 
 function RegisterForm() {
   const [email, setEmail] = useState('');
@@ -30,22 +31,12 @@ function RegisterForm() {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password, username, adminCode })
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        navigate('/login');
-      } else {
-        setError(data.message || 'Error al registrar el usuario');
-      }
+      /* Usa la instancia de axios en lugar de un fetch con la URL escrita a
+         mano, para que el destino salga de REACT_APP_API_URL como el resto. */
+      await axios.post('/api/auth/register', { email, password, username, adminCode });
+      navigate('/login');
     } catch (err) {
-      setError('Error al registrar el usuario');
+      setError(err?.response?.data?.message || 'Error al registrar el usuario');
     }
   };
 

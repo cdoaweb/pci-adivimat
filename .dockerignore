@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+# Los .tsbuildinfo son incrementales y dependen de rutas del host: si se cuelan
+# en la imagen, tsc cree que la compilacion esta al dia y no emite nada,
+# saliendo con codigo 0 y dejando dist/ vacio.
+**/*.tsbuildinfo
+**/.git
+**/.env
+**/npm-debug.log*
+frontend
+docs

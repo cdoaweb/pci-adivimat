@@ -3,6 +3,20 @@ import axios from '../Components/utils/axiosConfig'
 
 const AuthContext = createContext();
 
+/*
+ * Extrae el mensaje de un fallo de axios.
+ *
+ * Antes se hacia `error.response.data` directamente: si la peticion no llegaba
+ * a salir (backend caido, sin red), `response` es undefined y el propio catch
+ * lanzaba un TypeError que dejaba el formulario colgado sin mostrar nada.
+ */
+const mensajeDeError = (error, porDefecto) => {
+    const data = error?.response?.data;
+    if (typeof data === 'string') return data;
+    if (data?.message) return data.message;
+    return porDefecto;
+};
+
 const authReducer = (state, action) => {
     switch (action.type) {
         case 'LOGIN_SUCCESS':
@@ -44,26 +58,26 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             const response = await axios.post('/api/auth/login', { email, password });
-            console.log(response.data);
-            const { accessToken, user } = response.data;
-            localStorage.setItem('token', accessToken);
+            /* El backend responde { token, user }. Antes se leia `accessToken`,
+               que no existe, y se guardaba la cadena "undefined". */
+            const { token, user } = response.data;
+            localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
-            dispatch({ type: 'LOGIN_SUCCESS', payload: { user, accessToken } });
+            dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token } });
         } catch (error) {
-            console.error("Error during login", error);
-            dispatch({ type: 'LOGIN_FAILED', payload: error.response.data || 'Error al iniciar sesión' })
+            dispatch({ type: 'LOGIN_FAILED', payload: mensajeDeError(error, 'Error al iniciar sesión') })
         }
     };
 
-    const register = async (email, password, username) => {
+    const register = async (email, password, username, adminCode) => {
         try {
-            const response = await axios.post('/api/auth/register', { email, password, username });
-            const { accessToken, user } = response.data;
-            localStorage.setItem('token', accessToken);
+            const response = await axios.post('/api/auth/register', { email, password, username, adminCode });
+            const { token, user } = response.data;
+            localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
-            dispatch({ type: 'REGISTER_SUCCESS', payload: { user, accessToken } });
+            dispatch({ type: 'REGISTER_SUCCESS', payload: { user, token } });
         } catch (error) {
-            dispatch({ type: 'REGISTER_FAILED', payload: error.response.data || 'Error en el registro' });
+            dispatch({ type: 'REGISTER_FAILED', payload: mensajeDeError(error, 'Error en el registro') });
         }
     };
 

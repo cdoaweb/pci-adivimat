@@ -20,3 +20,74 @@ directo al contenido educativo.
 [Implementación](docs/05-Implementacion.md)
 [Conclusiones](docs/06-conclusiones.md)
 [Bibliografía](docs/07-bibliografia.md)
+## Puesta en marcha
+
+Requisitos: Docker y Node 22.
+
+### 1. Configurar el entorno
+
+```bash
+cp .env.example .env
+```
+
+Rellena `.env`. Para `JWT_SECRET` genera un valor con:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
+
+### 2. Levantar los contenedores
+
+```bash
+docker compose up -d --build
+```
+
+Levanta tres servicios:
+
+| Servicio        | URL                     | Descripción                        |
+| --------------- | ----------------------- | ---------------------------------- |
+| `backend`       | http://localhost:4000   | API REST (`/health` para comprobar) |
+| `mongo`         | localhost:27017         | Base de datos, con volumen persistente |
+| `mongo-express` | http://localhost:8082   | Visor web de la base de datos      |
+
+El backend usa el puerto **4000**, no el 3000, porque el 3000 lo ocupa el
+servidor de desarrollo de React.
+
+### 3. Levantar el frontend
+
+```bash
+cd frontend/adivimat-accesible && npm install && npm start
+```
+
+Queda en http://localhost:3000. La URL de la API se configura con
+`REACT_APP_API_URL` en `frontend/adivimat-accesible/.env.local`.
+
+## Estructura
+
+```
+shared/    Tipos y lógica de dominio compartidos (sin dependencias de plataforma)
+backend/   API REST en TypeScript (Express + Mongoose)
+frontend/  Cliente web en React
+```
+
+`shared/` es neutral de plataforma a propósito: no importa `mongoose`, `express`
+ni nada del DOM, de modo que la futura app móvil (Expo / React Native) pueda
+consumirlo tal cual y reutilizar las reglas del juego sin conexión.
+
+### Desarrollo del backend fuera de Docker
+
+```bash
+cp backend/.env.example backend/.env
+docker compose up -d mongo
+npm run dev --workspace backend
+```
+
+Otros comandos útiles, desde la raíz:
+
+```bash
+npm run build
+```
+
+```bash
+npm run typecheck
+```

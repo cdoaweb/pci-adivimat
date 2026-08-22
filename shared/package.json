@@ -1,0 +1,20 @@
+{
+  "name": "@adivimat/shared",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tipos y logica de dominio compartidos entre backend, web y movil (Expo/React Native)",
+  "license": "ISC",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

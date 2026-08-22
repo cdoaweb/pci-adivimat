@@ -1,0 +1,16 @@
+{
+  "name": "adivimat",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Adivimat Accesible - monorepo",
+  "license": "ISC",
+  "workspaces": [
+    "shared",
+    "backend"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace shared && npm run build --workspace backend",
+    "dev": "npm run dev --workspace backend",
+    "typecheck": "npm run typecheck --workspace shared && npm run typecheck --workspace backend"
+  }
+}
