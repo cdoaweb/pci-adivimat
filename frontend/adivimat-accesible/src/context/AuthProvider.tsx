@@ -1,6 +1,6 @@
 import { type ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 
-import type { LoginResponse, RegisterResponse, UserPublic } from '@adivimat/shared';
+import type { LoginResponse, UserPublic } from '@adivimat/shared';
 
 import { EVENTO_SESION_CADUCADA, TOKEN_KEY, USER_KEY, api, leerJSON, mensajeDeError } from '../lib/api';
 
@@ -55,12 +55,8 @@ interface AuthContextValue {
   /** true mientras se restaura la sesion desde localStorage al arrancar. */
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (
-    email: string,
-    password: string,
-    username: string,
-    adminCode: string,
-  ) => Promise<void>;
+  /** Establece la sesion a partir de un token ya emitido (alta inicial). */
+  establecerSesion: (user: UserPublic, token: string) => void;
   logout: () => void;
   getToken: () => string | null;
 }
@@ -120,23 +116,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [guardarSesion],
   );
 
-  const register = useCallback(
-    async (email: string, password: string, username: string, adminCode: string) => {
-      try {
-        const { data } = await api.post<RegisterResponse>('/api/auth/register', {
-          email,
-          password,
-          username,
-          adminCode,
-        });
-        guardarSesion(data.user, data.token);
-      } catch (error) {
-        dispatch({ type: 'AUTH_FAILED', payload: mensajeDeError(error, 'Error en el registro') });
-      }
-    },
-    [guardarSesion],
-  );
-
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
@@ -146,8 +125,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const getToken = useCallback(() => state.token, [state.token]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ state, loading, login, register, logout, getToken }),
-    [state, loading, login, register, logout, getToken],
+    () => ({ state, loading, login, establecerSesion: guardarSesion, logout, getToken }),
+    [state, loading, login, guardarSesion, logout, getToken],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -43,3 +43,13 @@ UserSchema.methods.comparePassword = function comparePassword(
 };
 
 export const User = model<IUser, UserModel>('User', UserSchema);
+
+/**
+ * Indica si ya existe algun administrador.
+ *
+ * Vive junto al modelo, y no en un controlador, porque la consultan tanto el
+ * middleware que autoriza el alta como el propio controlador de registro.
+ */
+export async function hayAdministradores(): Promise<boolean> {
+  return (await User.exists({ isAdmin: true })) !== null;
+}

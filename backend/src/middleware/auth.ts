@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 
 import type { ApiError } from '@adivimat/shared';
 
+import { hayAdministradores } from '../models/user';
 import { verifyToken } from '../utils/generateToken';
 
 /** Extrae el token de una cabecera `Authorization: Bearer <token>`. */
@@ -48,4 +49,30 @@ export function requireAdmin(req: Request, res: Response<ApiError>, next: NextFu
     }
     next();
   });
+}
+
+/**
+ * Autoriza el alta de administradores segun el estado del sistema.
+ *
+ * Sin ningun administrador todavia, deja pasar: el controlador exigira el
+ * ADMIN_CODE. En cuanto existe uno, el alta pasa a ser una operacion de
+ * administrador y el codigo deja de valer.
+ *
+ * La comprobacion se hace por peticion, y no al arrancar, porque el estado
+ * cambia justo con el primer alta.
+ */
+export async function autorizarRegistro(
+  req: Request,
+  res: Response<ApiError>,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    if (await hayAdministradores()) {
+      requireAdmin(req, res, next);
+      return;
+    }
+    next();
+  } catch {
+    res.status(500).json({ message: 'Error al comprobar el estado del sistema' });
+  }
 }

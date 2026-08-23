@@ -4,6 +4,7 @@ import { MongoServerError } from 'mongodb';
 
 import {
   type ApiError,
+  type BootstrapStatusResponse,
   type LoginRequest,
   type LoginResponse,
   type RegisterRequest,
@@ -14,7 +15,7 @@ import {
 } from '@adivimat/shared';
 
 import { toUserPublic } from '../models/mappers';
-import { User } from '../models/user';
+import { User, hayAdministradores } from '../models/user';
 import { config } from '../config/env';
 import { generateToken } from '../utils/generateToken';
 
@@ -23,27 +24,53 @@ const SALT_ROUNDS = 10;
 /** Codigo de error de MongoDB para violacion de indice unico. */
 const DUPLICATE_KEY = 11000;
 
+/** Estado del alta inicial. Publico: el formulario lo consulta antes de pintarse. */
+export async function estadoBootstrap(
+  _req: Request,
+  res: Response<BootstrapStatusResponse | ApiError>,
+): Promise<void> {
+  try {
+    res.json({ bootstrap: !(await hayAdministradores()) });
+  } catch {
+    res.status(500).json({ message: 'Error al comprobar el estado del sistema' });
+  }
+}
+
 /**
- * Registra un administrador.
+ * Da de alta un administrador.
  *
- * Se conserva el comportamiento original: hace falta `adminCode` y el usuario
- * creado siempre es admin. No existe registro de usuarios normales.
+ * Dos caminos, segun si el sistema ya tiene administradores:
+ *
+ * - Alta inicial (ninguno todavia): se autoriza con ADMIN_CODE y se devuelve
+ *   un token, para poder entrar sin un segundo paso.
+ * - Alta normal: la hace un administrador autenticado (lo comprueba
+ *   `autorizarRegistro` antes de llegar aqui) y NO se devuelve token, para no
+ *   sustituir su sesion por la de la cuenta recien creada.
+ *
+ * Antes bastaba con acertar un ADMIN_CODE compartido, que ademas valia
+ * indefinidamente y para cualquiera que lo conociese.
  */
 export async function register(
-  req: Request<unknown, unknown, Partial<RegisterRequest>>,
+  req: Request<Record<string, string>, unknown, Partial<RegisterRequest>>,
   res: Response<RegisterResponse | ApiError>,
 ): Promise<void> {
-  const errores = validarRegistro(req.body);
+  let esAltaInicial: boolean;
+  try {
+    esAltaInicial = !(await hayAdministradores());
+  } catch {
+    res.status(500).json({ message: 'Error al comprobar el estado del sistema' });
+    return;
+  }
+
+  const errores = validarRegistro(req.body, esAltaInicial);
   if (!esValido(errores)) {
     res.status(400).json({ message: Object.values(errores).join('. ') });
     return;
   }
 
-  /* Tras `esValido` los campos existen, pero el compilador no lo deduce del
-     tipo `Partial`, asi que se desestructuran con valores ya comprobados. */
   const { username, email, password, adminCode } = req.body as RegisterRequest;
 
-  if (adminCode !== config.adminCode) {
+  if (esAltaInicial && adminCode !== config.adminCode) {
     res.status(401).json({ message: 'Codigo de administrador incorrecto' });
     return;
   }
@@ -53,15 +80,17 @@ export async function register(
     const user = new User({ username, email, password: hashedPassword, isAdmin: true });
     await user.save();
 
-    const token = generateToken({ id: user._id.toString(), isAdmin: user.isAdmin });
-
-    /* Se devuelve `user` ademas de `token`: el frontend ya lo esperaba y
-       recibia `undefined`. */
-    res.status(201).json({
-      message: 'Administrador creado correctamente',
-      token,
+    const cuerpo: RegisterResponse = {
+      message: esAltaInicial
+        ? 'Administrador inicial creado correctamente'
+        : 'Administrador creado correctamente',
       user: toUserPublic(user),
-    });
+      ...(esAltaInicial
+        ? { token: generateToken({ id: user._id.toString(), isAdmin: user.isAdmin }) }
+        : {}),
+    };
+
+    res.status(201).json(cuerpo);
   } catch (error) {
     if (error instanceof MongoServerError && error.code === DUPLICATE_KEY) {
       res.status(409).json({ message: 'Ya existe un usuario con ese email o nombre de usuario' });
@@ -72,7 +101,7 @@ export async function register(
 }
 
 export async function login(
-  req: Request<unknown, unknown, Partial<LoginRequest>>,
+  req: Request<Record<string, string>, unknown, Partial<LoginRequest>>,
   res: Response<LoginResponse | ApiError>,
 ): Promise<void> {
   const errores = validarLogin(req.body);

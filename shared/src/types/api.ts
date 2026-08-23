@@ -23,17 +23,35 @@ export interface LoginResponse {
   user: UserPublic;
 }
 
+/**
+ * Alta de administrador.
+ *
+ * `adminCode` solo se usa en el alta inicial, cuando todavia no existe ningun
+ * administrador. A partir de ahi el alta la hace un administrador ya
+ * autenticado y el codigo deja de aceptarse.
+ */
 export interface RegisterRequest {
   username: string;
   email: string;
   password: string;
-  adminCode: string;
+  adminCode?: string;
 }
 
 export interface RegisterResponse {
   message: string;
-  token: string;
   user: UserPublic;
+  /**
+   * Presente solo en el alta inicial, para poder entrar sin volver a
+   * autenticarse. Cuando un administrador da de alta a otro no se devuelve:
+   * la sesion de quien crea la cuenta debe seguir intacta.
+   */
+  token?: string;
+}
+
+/** Indica si el sistema todavia no tiene ningun administrador. */
+export interface BootstrapStatusResponse {
+  /** true cuando no hay administradores y el alta inicial esta disponible. */
+  bootstrap: boolean;
 }
 
 /** Payload que viaja dentro del JWT. */

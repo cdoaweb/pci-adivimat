@@ -1,11 +1,16 @@
 import { Router } from 'express';
 
-import { login, register } from '../controllers/authController';
-import { requireAuth } from '../middleware/auth';
+import { estadoBootstrap, login, register } from '../controllers/authController';
+import { autorizarRegistro, requireAuth } from '../middleware/auth';
 
 const router = Router();
 
-router.post('/register', register);
+/* Publico: el formulario de alta lo consulta para saber si debe pedir el
+   codigo inicial o exigir sesion de administrador. */
+router.get('/bootstrap', estadoBootstrap);
+
+/* El alta solo es publica mientras no exista ningun administrador. */
+router.post('/register', autorizarRegistro, register);
 router.post('/login', login);
 
 /**

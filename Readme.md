@@ -85,10 +85,28 @@ Jugar no requiere cuenta, que es la premisa de la aplicacion. Todo lo que
 escribe exige una cabecera `Authorization: Bearer <token>` de un usuario con
 `isAdmin`.
 
-Las cuentas se crean en `/register` con el `ADMIN_CODE` del `.env`. El token
-caduca en `JWT_EXPIRES_IN` (1 hora por defecto); cuando el servidor lo rechaza,
-el cliente cierra la sesion y lleva al formulario de acceso avisando de que ha
-caducado.
+### Altas de administrador
+
+El `ADMIN_CODE` del `.env` sirve **una sola vez**: autoriza el alta del primer
+administrador, cuando la base de datos todavia no tiene ninguno. En cuanto
+existe uno, el codigo deja de aceptarse y las cuentas nuevas las crea un
+administrador con su sesion desde `/register`.
+
+`GET /api/auth/bootstrap` indica en cual de los dos estados esta el sistema, y
+el formulario se adapta solo: pide el codigo en el alta inicial y lo oculta
+despues.
+
+Al dar de alta a otro administrador no se devuelve token, para que la sesion de
+quien crea la cuenta siga intacta. En el alta inicial si, para poder entrar sin
+un segundo paso.
+
+Si se pierde el acceso a todas las cuentas de administrador, no hay forma de
+recuperarlo desde la aplicacion: hay que borrar los usuarios desde
+mongo-express, lo que devuelve el sistema al estado de alta inicial.
+
+El token caduca en `JWT_EXPIRES_IN` (1 hora por defecto); cuando el servidor lo
+rechaza, el cliente cierra la sesion y lleva al formulario de acceso avisando de
+que ha caducado.
 
 ## Estructura
 

@@ -35,6 +35,8 @@ export function validarLogin(entrada: Partial<LoginRequest>): ErroresValidacion<
 
 export function validarRegistro(
   entrada: Partial<RegisterRequest>,
+  /** true en el alta inicial, donde hace falta el codigo de administrador. */
+  exigirAdminCode = false,
 ): ErroresValidacion<RegisterRequest> {
   const errores: ErroresValidacion<RegisterRequest> = {};
 
@@ -56,7 +58,7 @@ export function validarRegistro(
     errores.password = `Minimo ${PASSWORD_MIN_LENGTH} caracteres`;
   }
 
-  if (!entrada.adminCode) {
+  if (exigirAdminCode && !entrada.adminCode) {
     errores.adminCode = 'El codigo de administrador es obligatorio';
   }
 
