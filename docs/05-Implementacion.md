@@ -1,152 +1,242 @@
 # Implementación
 
-## Back-end:
-### Conexión a la Base de Datos
+## El paquete compartido
 
-```javascript
-// app.js
-const mongoose = require('mongoose');
-const dotenv = require('dotenv').config();
+Es la pieza central, así que empiezo por ella. `shared/` contiene los tipos del
+dominio y las reglas del juego, y lo consumen el backend, el cliente web y la
+app móvil.
 
-const mongoUri = process.env.MONGO_URI;
-mongoose.connect(mongoUri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('Conexión exitosa a MongoDB'))
-.catch(err => console.error('Error al conectar con MongoDB:', err));
+```typescript
+// shared/src/types/domain.ts
+export interface Adivinanza {
+  id: Id;
+  numero?: number;
+  pregunta: string;
+  respuesta: string;
+  respuestasAceptadas: string[];
+  pista?: string;
+  dificultad: Dificultad;
+  /** Cuántos intentos concede esta adivinanza. Es un cupo, igual para todos. */
+  intentos: number;
+}
 ```
 
-### Registro de Usuario admin para gestionar adivinanzas
+Ese comentario sobre `intentos` señala un error de diseño que hubo que corregir.
+En la primera versión, la adivinanza guardaba también `puntos` y
+`respuestaRevelada`, y el servidor los iba modificando conforme se jugaba. Pero
+la adivinanza es **contenido compartido**: los fallos de un jugador consumían
+los intentos de todos los demás y, al agotarse, la respuesta quedaba revelada
+para siempre en el temario. Comprobado antes de arreglarlo: tras tres fallos de
+un jugador, otro que acababa de entrar veía la misma adivinanza con 2 intentos
+en lugar de 5.
 
-```javascript
-// authController.js
-const bcrypt = require('bcrypt');
-const User = require('../models/user');
-const generateToken = require('../utils/generateToken');
+Ahora el contenido solo dice cuántos intentos concede, y el estado de cada
+partida vive en quien juega.
 
-exports.register = async (req, res) => {
-  try {
-    const { username, email, password, adminCode } = req.body;
+### Corregir las respuestas
 
-    // Verificar si el código de admin es correcto para permitir la creación de un admin
-    if (adminCode !== process.env.ADMIN_CODE) {
-      return res.status(401).json({ message: 'Unauthorized to create an admin' });
-    }
+Exigir la respuesta literal haría el juego injugable: las soluciones del libro
+son términos como "ángulo obtusángulo" o expresiones como "mediatriz de un
+segmento".
 
-    // Encriptar la contraseña antes de guardar el usuario
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, email, password: hashedPassword, isAdmin: true });
-    await user.save();
+```typescript
+// shared/src/domain/adivinanza.ts
+export function normalizarRespuesta(valor: string): string {
+  const sinTildes = valor
+    .normalize('NFD')
+    /* Marcas diacríticas combinantes. La eñe se conserva: en español "n" y "ñ"
+       son letras distintas y "año" no es "ano". */
+    .replace(/[̀-̂̄-ͯ]/g, '');
 
-    // Generar el token
-    const token = generateToken(user._id, user.isAdmin);
+  return sinTildes
+    .toLowerCase()
+    .replace(/[.,;:!?"'()[\]]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^(?:el|la|los|las|un|una|unos|unas)\s+/, '');
+}
+```
 
-    res.status(201).json({ message: 'Admin created successfully', token });
-  } catch (error) {
-    res.status(500).json({ message: 'Error registering new admin: ' + error.message });
+Se perdonan mayúsculas, tildes, puntuación, el artículo inicial y el número
+(singular o plural). También la forma corta, cuando el complemento no es lo que
+distingue la respuesta: `mediatriz` vale por `mediatriz de un segmento`, pero
+`límite` no vale por `límite por la izquierda de una función en un punto`,
+porque borraría la diferencia con `... por la derecha`.
+
+### Las reglas de la partida
+
+```typescript
+export function registrarIntento(
+  estado: EstadoAdivinanza,
+  respuestaUsuario: string,
+  puntosPorAcierto: number = PUNTOS_POR_ACIERTO,
+): ResultadoIntento
+```
+
+Devuelve un estado nuevo sin modificar el que recibe. Esa pureza es lo que
+permite probarlo sin base de datos y reutilizarlo en el móvil sin conexión.
+
+## Back-end
+
+### Configuración validada al arrancar
+
+```typescript
+// backend/src/config/env.ts
+function requerido(nombre: string): string {
+  const valor = process.env[nombre];
+  if (!valor) {
+    throw new Error(
+      `Falta la variable de entorno ${nombre}. Copia .env.example a .env y rellénala.`,
+    );
   }
-};
+  return valor;
+}
 ```
 
-### Generación de Token JWT
+Antes, `mongoose.connect(process.env.MONGO_URI)` recibía `undefined` cuando
+faltaba el `.env`, y el fallo aparecía mucho después como un error de conexión
+confuso.
 
-```javascript
-// generateToken.js
-const jwt = require('jsonwebtoken');
+### Modelo de contenido
 
-// Generar un JWT
-const generateToken = (userId, isAdmin) => {
-  // Carga la clave secreta desde las variables de entorno
-  const secretKey = process.env.JWT_SECRET;
+Tema, subtema y adivinanza viven en un mismo documento. Cada entidad tiene dos
+tipos: la forma en crudo (`ITema`) y el documento hidratado (`TemaDoc`), que es
+el que tiene `save()`. La distinción importa: llamar a `save()` sobre un objeto
+plano no compila.
 
-  // Información del token
-  const payload = {
-    id: userId,
-    isAdmin: isAdmin,
-  };
+```typescript
+// backend/src/models/tema.ts
+export interface ITema {
+  tema: string;
+  subtemas: ISubtema[];
+}
 
-  // Opciones del token
-  const options = {
-    expiresIn: '1h', // El token expira en 1 hora
-  };
-
-  // Crear el token
-  const token = jwt.sign(payload, secretKey, options);
-  return token;
-};
-
-module.exports = generateToken;
+export type TemaDoc = HydratedDocument<
+  ITema,
+  { subtemas: Types.DocumentArray<ISubtema, SubtemaDoc> }
+>;
 ```
 
-### Modelo de Tema con Subtemas y Adivinanzas
-```javascript
-// tema.js
-const mongoose = require('mongoose');
-const SubtemaSchema = require('./subtema').schema;
+### Autenticación
 
-const TemaSchema = new mongoose.Schema({
-  tema: String,
-  subtemas: [SubtemaSchema]
-});
+El registro dejó de ser una puerta abierta. Antes bastaba con conocer un
+`ADMIN_CODE` del `.env`, que valía indefinidamente y para cualquiera. Ahora el
+sistema tiene dos estados:
 
-module.exports = mongoose.model('Tema', TemaSchema);
-
-// subtema.js
-const mongoose = require('mongoose');
-const AdivinanzaSchema = require('./adivinanza').schema;
-
-const SubtemaSchema = new mongoose.Schema({
-  name: String,
-  adivinanzas: [AdivinanzaSchema]
-});
-
-module.exports = mongoose.model('Subtema', SubtemaSchema);
-
-// adivinanza.js
-const mongoose = require('mongoose');
-
-const AdivinanzaSchema = new mongoose.Schema({
-  pregunta: {
-    type: String,
-    trim: false
-  },
-  respuesta: {
-    type: String,
-    trim: false
-  },
-  intentos: {
-    type: Number,
-    default: 5,
-    min: [0, 'Los intentos no pueden ser negativos']
-  },
-  puntos: {
-    type: Number,
-    default: 0,
-    min: [0, 'Los puntos no pueden ser negativos']
-  },
-  respuestaRevelada: {
-    type: Boolean,
-    default: false
+```typescript
+// backend/src/middleware/auth.ts
+export async function autorizarRegistro(req, res, next): Promise<void> {
+  if (await hayAdministradores()) {
+    requireAdmin(req, res, next);   // ya hay admins: hace falta sesión
+    return;
   }
-});
-
-AdivinanzaSchema.index({ pregunta: 1 });
-
-AdivinanzaSchema.methods.verificarRespuesta = function (respuestaUsuario) {
-  return this.respuesta.toLowerCase() === respuestaUsuario.toLowerCase();
-};
-
-module.exports = mongoose.model('Adivinanza', AdivinanzaSchema);
+  next();                            // alta inicial: el controlador pedirá el código
+}
 ```
 
-### .env
-ADMIN_CODE= (El proporcionado)
-JWT_SECRET=(El proporcionado)
-MONGO_URI=mongodb://usuario:contraseña@localhost:27017/adivimat?authSource=admin
-BACKEND_PORT=8000
+El estado se comprueba **por petición**, no al arrancar, porque cambia justo con
+el primer alta. Así el sistema nunca queda bloqueado sin manera de crear el
+primer administrador.
 
+Un detalle que importa: cuando un administrador da de alta a otro, la respuesta
+**no** incluye token. Si lo incluyera, el cliente cambiaría de sesión y quien
+creó la cuenta acabaría dentro de la cuenta nueva.
 
+### Control de acceso
 
+| Operación | Acceso |
+| --- | --- |
+| Listar temas, subtemas y adivinanzas | Público |
+| Jugar | Público |
+| Crear, editar o borrar contenido | Solo administradores |
+
+Jugar no requiere cuenta, que es la premisa de la aplicación. Antes tampoco la
+requería **escribir**: el único middleware de autorización se registraba con
+`router.use('/admin', ...)` sobre una ruta que no existía, así que nunca llegaba
+a ejecutarse y cualquiera podía borrar contenido sin token.
+
+## Cliente web
+
+### La sesión, con acciones tipadas
+
+```typescript
+// frontend/.../context/AuthProvider.tsx
+type AuthAction =
+  | { type: 'AUTH_SUCCESS'; payload: { user: UserPublic; token: string } }
+  | { type: 'AUTH_FAILED'; payload: string }
+  | { type: 'SESION_CADUCADA' }
+  | { type: 'LOGOUT' };
+```
+
+Esta unión discriminada es lo que hace imposible repetir el error original: el
+`dispatch` enviaba `{ user, accessToken }` y el reducer leía `payload.token`, de
+modo que `state.token` era permanentemente `undefined` y el token que se
+guardaba en `localStorage` era la cadena `"undefined"`.
+
+### Progreso del jugador
+
+Se guarda en el dispositivo, no en el servidor: no hay cuenta a la que
+asociarlo.
+
+```typescript
+// shared/src/domain/progreso.ts
+export function registrarResultado(
+  progreso: Progreso,
+  adivinanzaId: Id,
+  resultado: ResultadoPartida,
+  ahora: Date = new Date(),
+): Progreso
+```
+
+Los puntos se conceden **una sola vez** por adivinanza: sin esa regla, repetir
+una acertada daría puntos infinitos. Los intentos sí se acumulan, porque miden
+el esfuerzo.
+
+Ante un almacenamiento corrupto o de otra versión se empieza de cero en lugar de
+fallar: perder la puntuación es molesto, pero mucho menos que dejar la
+aplicación sin arrancar por un `localStorage` manipulado.
+
+## App móvil
+
+La pantalla de la partida no reescribe ninguna regla. Importa exactamente las
+mismas funciones que la web:
+
+```typescript
+// mobile/src/pantallas/Juego.tsx
+import {
+  registrarIntento,
+  generarOpciones,
+  estaResuelta,
+  resumirProgreso,
+} from '@adivimat/shared';
+```
+
+Lo único propio del móvil es el almacén (`AsyncStorage` en vez de
+`localStorage`) y cómo se resuelve la dirección del backend, que es el detalle
+que más se atraganta: en un teléfono, `localhost` es el propio teléfono.
+
+```typescript
+// mobile/src/lib/api.ts
+const hostUri = Constants.expoConfig?.hostUri;
+const host = hostUri?.split(':')[0];
+if (host) return `http://${host}:4000`;
+```
+
+`hostUri` es la dirección de la máquina que sirve el paquete de desarrollo, que
+está en la misma red que el teléfono.
+
+## Variables de entorno
+
+```
+MONGO_URI=mongodb://usuario:contraseña@mongo:27017/adivimat?authSource=admin
+JWT_SECRET=(generado con crypto.randomBytes)
+JWT_EXPIRES_IN=1h
+ADMIN_CODE=(solo para el alta del primer administrador)
+PORT=4000
+CORS_ORIGINS=http://localhost:3000
+```
+
+`.env.example` las documenta todas. El archivo `.env` real está en
+`.gitignore`.
 
 \pagebreak

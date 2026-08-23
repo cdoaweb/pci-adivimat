@@ -18,8 +18,8 @@ El uso de Docker ha sido decisivo para garantizar que mi aplicación se desplieg
 
 ## Tecnologías Front-end
 
-### React.js y Redux
-React.js, con su enfoque basado en componentes, ha permitido la creación de una interfaz de usuario dinámica y reactiva. Redux ha simplificado la gestión del estado de la aplicación, asegurando un flujo de datos predecible y facilitando el manejo de estados complejos.
+### React.js y la Context API
+React.js, con su enfoque basado en componentes, ha permitido la creación de una interfaz de usuario dinámica y reactiva. Para el estado compartido he usado la **Context API** junto con `useReducer`, y no Redux: el estado de esta aplicación es pequeño y local, y Redux habría añadido complejidad sin aportar nada. El flujo sigue siendo predecible, porque las acciones del reducer están tipadas una a una.
 
 ### React Router y Axios
 React Router ha sido fundamental para la navegación eficiente dentro de la aplicación, mejorando la experiencia del usuario. Axios ha simplificado la comunicación con el back-end, permitiendo realizar peticiones HTTP de manera fluida y manejable.
@@ -58,5 +58,12 @@ Mirando hacia el futuro, planeo:
 Como finalista de DAM y usuario de tecnologías de asistencia, este proyecto ha representado un desafío y un aprendizaje significativo. He aprendido a integrar tecnologías modernas y a considerar la accesibilidad como un componente central del desarrollo de aplicaciones. Este enfoque no solo mejora la usabilidad para personas con discapacidades, sino que también enriquece la experiencia de todos los usuarios.
 
 Este proyecto demuestra que con las herramientas adecuadas y un enfoque inclusivo, es posible desarrollar aplicaciones web robustas, seguras y accesibles que cumplen con las necesidades actuales del mercado y de la comunidad. Estoy orgulloso del trabajo realizado y confío en que esta aplicación será útil y efectiva para sus usuarios finales.
+
+> **Nota posterior.** Varias de las intenciones de este apartado se han
+> cumplido desde entonces: hay pruebas automatizadas, el código se reorganizó al
+> migrarlo a TypeScript y existe la aplicación móvil en React Native. Lo que ha
+> cambiado desde esta memoria está recogido en
+> **[Evolución del proyecto](08-evolucion.md)**, para no alterar lo escrito
+> aquí en su momento.
 
 \pagebreak

@@ -1,163 +1,222 @@
 # Tecnologías
 
-## Back-end:
-### 1. **Node.js**
-- **Qué es**: Node.js es un entorno de ejecución para JavaScript construido con el motor de JavaScript V8 de Chrome.
-- **Por qué lo uso**: Node.js permite construir aplicaciones de red escalables y rápidas gracias a su modelo de E/S sin bloqueo y basado en eventos. Es ideal para aplicaciones en tiempo real y APIs RESTful.
+El proyecto es un **monorepo con npm workspaces** formado por cuatro paquetes:
 
-### 2. **Express.js**
-- **Qué es**: Express es un framework para aplicaciones web en Node.js.
-- **Por qué lo uso**: Simplifica la creación y el manejo de rutas y middleware, permitiendo una configuración rápida y eficiente de la aplicación web y sus rutas.
+```
+shared/    Tipos y lógica de dominio, sin dependencias de plataforma
+backend/   API REST (Node.js + Express + Mongoose)
+frontend/  Cliente web (React + Vite)
+mobile/    App móvil (React Native + Expo)
+```
 
-### 3. **MongoDB**
-- **Qué es**: MongoDB es una base de datos NoSQL orientada a documentos.
-- **Por qué lo uso**: MongoDB proporciona una gran flexibilidad y escalabilidad, permitiendo almacenar datos en documentos JSON dinámicos. Es fácil de integrar con Node.js a través del driver de MongoDB para Node.js.
+## Transversal
 
-### 4. **Mongoose**
-- **Qué es**: Mongoose es una biblioteca de Node.js que proporciona una solución basada en esquemas para modelar datos en MongoDB.
-- **Por qué lo uso**: Simplifica las interacciones con MongoDB proporcionando validación de esquemas, casting de tipos y otras funcionalidades útiles.
+### TypeScript
 
-### 5. **JWT (JSON Web Tokens)**
-- **Qué es**: JWT es un estándar abierto para crear tokens de acceso que permiten la verificación y autorización de usuarios.
-- **Por qué lo uso**: JWT es ideal para manejar la autenticación de usuarios en aplicaciones web y móviles, proporcionando una manera segura y compacta de transmitir información entre el cliente y el servidor.
+- **Qué es**: un superconjunto de JavaScript que añade tipos comprobados antes
+  de ejecutar.
+- **Por qué lo uso**: el proyecto empezó en JavaScript y se migró entero. El
+  motivo no fue estético: con tres clientes distintos (web, móvil y el propio
+  backend) hablando la misma API, el contrato tiene que estar escrito en algún
+  sitio que el compilador sepa comprobar. Al migrar aparecieron errores que
+  llevaban meses en producción, como que el cliente leía `accessToken` donde el
+  servidor enviaba `token`, de modo que la sesión nunca se guardaba bien.
 
-### 6. **bcrypt**
-- **Qué es**: bcrypt es una librería para el hashing de contraseñas.
-- **Por qué lo uso**: Garantiza que las contraseñas de los usuarios estén almacenadas de manera segura mediante el uso de un algoritmo de hash que incluye un salt para mayor seguridad.
+### El paquete `shared`
 
-### 7. **dotenv**
-- **Qué es**: dotenv es una librería que carga variables de entorno desde un archivo `.env` al `process.env` de Node.js.
-- **Por qué lo uso**: Permite manejar de manera segura y sencilla las configuraciones sensibles y las credenciales de la aplicación.
+- **Qué es**: un paquete propio del monorepo con los tipos del dominio, el
+  contrato de la API, las reglas del juego, las validaciones y el progreso del
+  jugador.
+- **Por qué lo uso**: es la pieza que evita que la misma regla se escriba tres
+  veces y acabe discrepando. Antes ocurría: el modelo comparaba las respuestas
+  en minúsculas y la ruta del servidor lo hacía distinguiendo mayúsculas, así
+  que la misma respuesta se aceptaba o se rechazaba según por dónde entrase.
+- **Restricción**: no importa `mongoose`, ni `express`, ni nada del DOM. Esa
+  disciplina es lo que permite que la app móvil lo consuma **sin adaptar una
+  sola línea**.
 
-### 8. **CORS (Cross-Origin Resource Sharing)**
-- **Qué es**: CORS es un mecanismo que permite solicitudes HTTP desde diferentes dominios.
-- **Por qué lo uso**: Necesito CORS para permitir que el frontend de la aplicación pueda comunicarse con el backend alojado en un dominio diferente, para mejoras en el futuro.
+## Back-end
 
-### 9. **Docker**
-- **Qué es**: Docker es una plataforma para desarrollar, enviar y ejecutar aplicaciones dentro de contenedores.
-- **Por qué lo uso**: Docker permite empaquetar la aplicación y sus dependencias en un contenedor, asegurando que funcione en cualquier entorno.  Esto facilita el despliegue y la escalabilidad de la aplicación.
+### Node.js y Express
 
-## Estructura
+- **Qué son**: entorno de ejecución de JavaScript en el servidor y framework web
+  minimalista.
+- **Por qué los uso**: permiten montar una API REST con poco código y compartir
+  lenguaje con el cliente, lo que hace posible el paquete `shared`.
 
-### 1. `app.js`
-- Configuración del servidor, conexión a la base de datos y establecimiento de las rutas principales de la aplicación.
-- **Tecnologías usadas**: Express.js, Mongoose, dotenv, CORS.
+### MongoDB y Mongoose
 
-### 2. Rutas
-- **`authRoutes.js`**: Maneja las rutas de autenticación (`/register`, `/login`, `/logout`) y la verificación de administradores.
-- **`temasRoutes.js`**: Maneja las rutas CRUD para `temas`, `subtemas` y `adivinanzas`.
-- **Tecnologías usadas**: Express.js.
+- **Qué son**: base de datos NoSQL orientada a documentos y biblioteca de
+  modelado sobre ella.
+- **Por qué los uso**: el contenido tiene forma de árbol (tema → subtema →
+  adivinanza) y encaja de forma natural en documentos anidados. Mongoose añade
+  validación de esquema y tipado.
+- **MongoDB Atlas**: el mismo código sirve para un Mongo local o para un clúster
+  en la nube. Solo cambia `MONGO_URI`.
 
-### 3. Controladores
-- **`authController.js`**: Controla la lógica para el registro, inicio de sesión y verificación de usuarios.
-- **`temaController.js`**: Controla la lógica CRUD para `temas`, `subtemas` y `adivinanzas`.
-- **Tecnologías usadas**: Mongoose, bcrypt, JWT.
+### JWT
 
-### 4. Modelos
-- **`user.js`**: Define el esquema y modelo de `User`.
-- **`tema.js`**: Define el esquema y modelo de `Tema`.
-- **`subtema.js`**: Define el esquema y modelo de `Subtema`.
-- **`adivinanza.js`**: Define el esquema y modelo de `Adivinanza`.
-- **Tecnologías usadas**: Mongoose.
+- **Qué es**: un estándar para emitir tokens de acceso firmados.
+- **Por qué lo uso**: la autenticación no necesita estado en el servidor. El
+  token caduca en una hora, y cuando el servidor lo rechaza el cliente cierra
+  sesión y avisa del motivo.
 
-### 5. Utilidades
-- **`generateToken.js`**: Función para generar tokens JWT.
-- **Tecnologías usadas**: JWT.
+### bcryptjs
 
-### 6. Carpeta Stack con el docker-compose
-- **[Expicado aqí](03-docker.md)**
+- **Qué es**: biblioteca para calcular el hash de las contraseñas.
+- **Por qué lo uso**: el proyecto arrastraba `bcrypt` y `bcryptjs` a la vez. Se
+  consolidó en `bcryptjs`, que es JavaScript puro: `bcrypt` compila código
+  nativo, lo que complica la construcción de la imagen de Docker y no encaja en
+  React Native.
 
-## Front-end:
-### React.js
-- **Qué es**: React.js es una biblioteca de JavaScript para construir interfaces de usuario.
-- **Por qué lo uso**: React.js permite la creación de aplicaciones web dinámicas y rápidas gracias a su enfoque basado en componentes y su eficiente manejo del DOM virtual.
+### dotenv
 
-### Redux
-- **Qué es**: Redux es una biblioteca para el manejo del estado de la aplicación.
-- **Por qué lo uso**: Facilita la gestión del estado en aplicaciones React, permitiendo un flujo de datos predecible y simplificado a través de un almacén centralizado.
+- **Qué es**: carga variables de entorno desde un archivo `.env`.
+- **Por qué lo uso**: mantiene fuera del repositorio las credenciales y la
+  configuración. La configuración se valida al arrancar, de modo que si falta
+  una variable el proceso muere diciendo cuál, en lugar de fallar mucho después
+  con un error de conexión confuso.
+
+### CORS
+
+- **Qué es**: el mecanismo que decide qué orígenes pueden llamar a la API desde
+  un navegador.
+- **Por qué lo uso**: el cliente web vive en otro puerto que la API. La lista de
+  orígenes permitidos es explícita; antes se aceptaba cualquiera.
+
+### Docker
+
+- **Qué es**: plataforma para empaquetar y ejecutar aplicaciones en
+  contenedores.
+- **Por qué lo uso**: levanta la aplicación entera con una sola orden y garantiza
+  que se comporte igual en cualquier máquina. **[Explicado aquí](03-docker.md)**.
+
+## Estructura del back-end
+
+```
+backend/src/
+  server.ts          Arranque: conecta a Mongo y abre el puerto
+  app.ts             Construye la aplicación de Express sin arrancarla
+  config/env.ts      Lee y valida la configuración
+  models/
+    tema.ts          Tema, Subtema y Adivinanza (documentos anidados)
+    user.ts          Usuario
+    mappers.ts       Convierte documentos de Mongoose en tipos públicos
+  controllers/
+    authController.ts   Registro, acceso y estado del alta inicial
+    temaController.ts   CRUD de contenido
+    juegoController.ts  Endpoints de la partida
+  middleware/auth.ts    requireAuth, requireAdmin y autorización del alta
+  routes/               Solo enrutan; la lógica está en los controladores
+  utils/generateToken.ts
+  scripts/seed.ts       Carga el temario en la base de datos
+```
+
+Dos decisiones que conviene explicar:
+
+- **Los tres esquemas están en un solo archivo** (`tema.ts`). Antes estaban
+  separados y `tema.js` hacía `require('./subtema').schema`, exportando un
+  modelo entero solo para leerle el esquema. El orden de definición importa,
+  porque cada uno se incrusta en el siguiente, y tenerlos juntos lo hace
+  explícito.
+- **Los mappers son el único punto de salida.** Todo lo que devuelve la API pasa
+  por ellos, que convierten `_id` en `id` y deciden qué campos son visibles. El
+  compilador rechaza cualquier campo no declarado en el tipo público, así que un
+  hash de contraseña no puede colarse en una respuesta sin que falle la
+  compilación.
+
+## Front-end web
+
+### React
+
+- **Qué es**: biblioteca para construir interfaces por composición de
+  componentes.
+- **Por qué lo uso**: el estado de la aplicación es pequeño y local, y se maneja
+  con hooks y **Context API**. No uso Redux: para este tamaño habría sido
+  complejidad sin beneficio.
+
+### Vite
+
+- **Qué es**: herramienta de compilación y servidor de desarrollo.
+- **Por qué lo uso**: sustituyó a Create React App, que está sin mantenimiento y
+  arrastraba las dependencias responsables de casi todos los avisos de seguridad
+  del repositorio. **[Explicado aquí](04-react.md)**.
 
 ### React Router
-- **Qué es**: React Router es una biblioteca para manejar la navegación y las rutas en aplicaciones React.
-- **Por qué lo uso**: Permite definir rutas y gestionar la navegación de manera sencilla y eficiente, mejorando la experiencia de usuario en aplicaciones de una sola página (SPA).
+
+- **Qué es**: biblioteca de enrutado para aplicaciones de una sola página.
+- **Por qué lo uso**: permite navegar sin recargar y proteger rutas de
+  administración.
 
 ### Axios
-- **Qué es**: Axios es una biblioteca para hacer solicitudes HTTP desde el navegador.
-- **Por qué lo uso**: Facilita la comunicación con el backend, permitiendo realizar peticiones API de manera sencilla y con soporte para promesas.
 
-### aria-live
-- **Qué es**: `aria-live` es un atributo de accesibilidad utilizado para anunciar dinámicamente las actualizaciones de contenido a los usuarios de tecnologías asistivas, como lectores de pantalla.
-- **Por qué lo uso**: Utilizo `aria-live` para asegurar que los mensajes importantes y las actualizaciones en la aplicación sean accesibles para todos los usuarios, incluyendo aquellos con discapacidades visuales. Esto mejora la usabilidad y accesibilidad de la aplicación, garantizando que todos los usuarios reciban la información crítica de manera oportuna.
+- **Qué es**: cliente HTTP.
+- **Por qué lo uso**: los interceptores permiten adjuntar el token en cada
+  petición y detectar en un solo sitio que la sesión ha caducado.
 
-## Estructura
+### Vitest
 
-### 1. `App.js`
-- Configuración principal de la aplicación, incluyendo rutas y componentes básicos.
-- **Tecnologías usadas**: React.js, React Router.
+- **Qué es**: framework de pruebas integrado con Vite.
+- **Por qué lo uso**: sustituye a Jest tras la migración. Las pruebas cubren el
+  arranque, la protección de rutas y las reglas de juego compartidas.
 
-### 2. Rutas
-- **`About.js`**: Página de información sobre la aplicación.
-- **`AddRiddle.js`**: Página para añadir nuevas adivinanzas.
-- **`AddSubtheme.js`**: Página para añadir nuevos subtemas.
-- **`AddTheme.js`**: Página para añadir nuevos temas.
-- **`EditTheme.js`**: Página para editar temas existentes.
-- **`EditSubtheme.js`**: Página para editar subtemas existentes.
-- **`EditRiddle.js`**: Página para editar adivinanzas existentes.
-- **`Home.js`**: Página principal de la aplicación.
-- **`Login.js`**: Página de inicio de sesión.
-- **`Register.js`**: Página de registro de usuarios administradores.
-- **`Gestion.js`**: Página para la gestión de temas, subtemas y adivinanzas.
-- **Tecnologías usadas**: React.js, React Router.
+### Accesibilidad
 
-### 3. Controladores de Estado
-- **`AuthProvider.js`**: Controla la lógica de autenticación y el estado del usuario.
-- **`ThemeContext.js`**: Controla la lógica de temas y subtemas.
-- **Tecnologías usadas**: React.js, Redux.
+- **`aria-live`**: anuncia los cambios de la partida a los lectores de pantalla
+  sin robar el foco.
+- **Etiquetas asociadas**: cada campo tiene su `<label>`, y los errores se
+  enlazan con `aria-describedby` y `aria-invalid`.
+- **`role="alert"`**: los errores se anuncian en cuanto aparecen. Antes eran
+  `alert()` del navegador, que bloquean el hilo y son incómodos con un lector
+  de pantalla.
+- **Modo de opción múltiple**: escribir "circunferencia circunscrita" con un
+  lector de pantalla es costoso, así que se puede responder eligiendo entre
+  cuatro opciones.
 
-### 4. Configuración
-- **`axiosConfig.js`**: Configuración de Axios para manejar solicitudes HTTP.
-- **`validation.js`**: Funciones de validación para entradas de usuario.
-- **Tecnologías usadas**: Axios, JavaScript.
+## Estructura del front-end web
 
-### 5. Componentes de Interfaz
-- **`Footer.js`**: Componente para el pie de página de la aplicación.
-- **`MenuAppBar.js`**: Barra de navegación superior.
-- **`LogoutButton.js`**: Botón para cerrar sesión.
-- **`PrivateRoute.js`**: Componente para proteger rutas privadas.
-- **`RiddleSelector.js`**: Selector de adivinanzas.
-- **`RiddleTable.js`**: Tabla de adivinanzas.
-- **`ThemeList.js`**: Lista de temas.
-- **`SubthemeList.js`**: Lista de subtemas.
-- **`ThemeManager.js`**: Gestión de temas y subtemas.
-- **Tecnologías usadas**: React.js, CSS.
+```
+frontend/adivimat-accesible/
+  index.html
+  vite.config.ts
+  src/
+    main.tsx              Punto de entrada
+    App.tsx               Rutas
+    lib/
+      api.ts              Cliente HTTP e interceptores
+      useProgreso.ts      Progreso sobre localStorage
+    context/
+      AuthProvider.tsx    Sesión, con acciones tipadas
+      ThemeContext.tsx
+    Components/
+      Home, Login, Logout, Register, About, MenuAppBar, Footer,
+      PrivateRoute, Gestion
+      selector/           La partida, partida en tres componentes
+      crud/               Gestión de temas, subtemas y adivinanzas
+    __tests__/
+```
 
-### 6. Estilos
-- **`App.css`**: Define los estilos globales de la aplicación.
-- **`Footer.css`**: Define los estilos específicos para el pie de página.
-- **Tecnologías usadas**: CSS.
+## App móvil
 
-### 7. Gestión de Contenidos
-- **`ThemeManager.js`**: Componente principal para la gestión de temas, subtemas y adivinanzas.
-  - **Qué es**: Proporciona la interfaz para gestionar los temas, subtemas y adivinanzas.
-  - **Por qué lo uso**: Permite a los administradores añadir, editar y eliminar contenido de manera eficiente.
+### React Native y Expo
 
-### 8. Autenticación y Autorización
-- **`Login.js`**: Página de inicio de sesión.
-  - **Qué es**: Permite a los usuarios autenticarse en la aplicación.
-  - **Por qué lo uso**: Controla el acceso a las funcionalidades protegidas de la aplicación.
+- **Qué son**: framework para escribir aplicaciones nativas con React, y
+  plataforma que simplifica su desarrollo y distribución.
+- **Por qué los uso**: permiten reutilizar el conocimiento de React y, sobre
+  todo, el paquete `shared` completo. La app móvil no reescribe ninguna regla
+  del juego.
 
-- **`Register.js`**: Página de registro de usuarios.
-  - **Qué es**: Permite a los nuevos usuarios administradores registrarse en la aplicación.
-  - **Por qué lo uso**: Facilita la incorporación de nuevos admin a la aplicación.
+### AsyncStorage
 
-- **`LogoutButton.js`**: Botón para cerrar sesión.
-  - **Qué es**: Permite a los usuarios cerrar su sesión de manera segura.
-  - **Por qué lo uso**: Garantiza que los usuarios puedan cerrar sesión y proteger su información.
+- **Qué es**: almacenamiento clave-valor persistente en el dispositivo.
+- **Por qué lo uso**: es el equivalente de `localStorage` en React Native. Es la
+  **única** diferencia real entre el progreso de la web y el del móvil: las
+  reglas vienen de `shared`, solo cambia dónde se guarda.
 
-- **`PrivateRoute.js`**: Componente para proteger rutas privadas.
-  - **Qué es**: Protege rutas que solo deben ser accesibles para usuarios autenticados.
-  - **Por qué lo uso**: Asegura que solo los usuarios autenticados puedan acceder a ciertas funcionalidades.
+### React Navigation
 
-  ### Despliegue del frontend
-**[React](04-react.md)**
+- **Qué es**: biblioteca de navegación entre pantallas.
+- **Por qué lo uso**: las rutas están tipadas, de modo que el compilador impide
+  navegar a una pantalla sin sus parámetros.
 
 \pagebreak

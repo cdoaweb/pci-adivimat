@@ -1,89 +1,118 @@
-# Instalación y configuración de MongoDB
+# Docker
 
-Para crear la infraestructura de servicios necesaria, en vez de instalar MongoDB, vamos a usar un contenedor para el servidor MongoDB y otro contenedor para Mongo-Express (una interfaz para interactuar con la base de datos).
+Toda la aplicación se levanta con Docker: la API, el cliente web, la base de
+datos y un visor para inspeccionarla.
 
-Creamos la carpeta `stack` y dentro de ésta el archivo `docker-compose.yml` con el siguiente contenido: 
+## Dos archivos de compose
 
-```yaml
-# Use root/example as user/password credentials
-version: '3.1'
+La configuración está partida en dos, y la razón es que la base de datos dejó de
+ser obligatoria: el proyecto puede apuntar a un clúster de **MongoDB Atlas** en
+lugar de a un Mongo local.
 
-services:
+| Archivo | Qué contiene |
+| --- | --- |
+| `docker-compose.yml` | La aplicación: `backend` y `frontend` |
+| `docker-compose.local-db.yml` | La base de datos local: `mongo` y `mongo-express` |
 
-  mongo:
-    image: mongo
-    restart: 'no'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: 83uddjfp0cmMD
-    ports:
-      - 27017:27017
+El `.env` los encadena con `COMPOSE_FILE`, de modo que `docker compose up -d`
+funciona en los dos casos sin escribir banderas:
 
-  mongo-express:
-    image: mongo-express
-    restart: 'no'
-    ports:
-      - 8081:8081
-    environment:
-      ME_CONFIG_BASICAUTH_USERNAME: mongo
-      ME_CONFIG_BASICAUTH_PASSWORD: 83uddjfp0cmMD
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: 83uddjfp0cmMD
-      ME_CONFIG_MONGODB_URL: mongodb://root:83uddjfp0cmMD@mongo:27017/
+```
+COMPOSE_PATH_SEPARATOR=:
+COMPOSE_FILE=docker-compose.yml:docker-compose.local-db.yml
 ```
 
-```yaml
-version: '3.1'
-```
+Para usar Atlas basta con dejar solo `docker-compose.yml` en esa variable y
+apuntar `MONGO_URI` al clúster.
 
-Esta línea especifica la versión de la sintaxis de `docker-compose` que se está utilizando. En este caso, es la versión 3.1.
+`COMPOSE_PATH_SEPARATOR` se fija a propósito: su valor por defecto es `;` en
+Windows y `:` en Linux y macOS, así que sin declararlo el mismo `.env` no
+serviría en las dos plataformas.
 
-```yaml
-services:
-  mongo:
-    image: mongo
-    restart: 'no'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: 83uddjfp0cmMD
-    ports:
-      - 27017:27017
-```
-
-Aquí se define un servicio llamado `mongo`. Este servicio utiliza la imagen oficial de MongoDB (`mongo`). Algunas configuraciones clave incluyen:
-
-- `restart: 'no'`: Esto indica que el contenedor no se reiniciará automáticamente a menos que se haga manualmente.
-- `environment`: Establece variables de entorno necesarias para configurar la base de datos MongoDB. En este caso, se especifica el nombre de usuario (usuario) y la contraseña (contraseña) para el usuario root de MongoDB.
-- `ports`: Mapea el puerto 27017 del host al puerto 27017 del contenedor, lo que permite la comunicación con la instancia de MongoDB.
-
-```yaml
-  mongo-express:
-    image: mongo-express
-    restart: 'no'
-    ports:
-      - 8081:8081
-    environment:
-      ME_CONFIG_BASICAUTH_USERNAME: mongo
-      ME_CONFIG_BASICAUTH_PASSWORD: contraseña
-      ME_CONFIG_MONGODB_ADMINUSERNAME: usuario
-      ME_CONFIG_MONGODB_ADMINPASSWORD: contraseña
-      ME_CONFIG_MONGODB_URL: mongodb://usuario:contraseña@mongo:27017/
-```
-
-Aquí se define un segundo servicio llamado `mongo-express`. Este servicio utiliza la imagen de Mongo Express (`mongo-express`). Algunas configuraciones clave son similares al servicio `mongo`, pero específicas de Mongo Express:
-
-- `restart: 'no'`: Al igual que en el servicio `mongo`, indica que el contenedor no se reiniciará automáticamente.
-- `ports`: Mapea el puerto 8081 del host al puerto 8081 del contenedor, permitiendo acceder a la interfaz web de Mongo Express.
-- `environment`: Configura las variables de entorno necesarias para la autenticación en MongoDB.
-- `ME_CONFIG_MONGODB_URL`: Especifica la URL de conexión a la base de datos MongoDB. En este caso, utiliza el usuario root y la contraseña proporcionados en las variables de entorno anteriores.
-- `ME_CONFIG_BASICAUTH_USERNAME` y `ME_CONFIG_BASICAUTH_PASSWORD` definen el usuario y contraseña para la interfaz Web. 
-
-Para poner en marcha estos servicios, debes tener Docker y Docker Compose instalados. Luego, ejecuta el siguiente comando en el directorio donde se encuentra el archivo `docker-compose.yml`:
+## Los servicios
 
 ```bash
-docker-compose up -d
+docker compose up -d --build
 ```
 
-Esto descargará las imágenes necesarias, creará y ejecutará los contenedores según la configuración proporcionada. Después de que los contenedores estén en funcionamiento, podrás acceder a MongoDB a través del puerto 27017 y a Mongo Express a través del puerto 8081 en tu máquina local.
+| Servicio | URL | Descripción |
+| --- | --- | --- |
+| `frontend` | http://localhost:3000 | Cliente web compilado con Vite y servido por nginx |
+| `backend` | http://localhost:4000 | API REST (`/health` para comprobarla) |
+| `mongo` | localhost:27017 | Base de datos, con volumen persistente |
+| `mongo-express` | http://localhost:8082 | Visor web de la base de datos |
+
+Tres detalles de esos puertos:
+
+- El backend usa el **4000** y no el 3000, que es el del cliente web. Antes
+  ambos pedían el 3000 y solo funcionaba por casualidad, porque el servidor de
+  desarrollo se apartaba al 3001 al encontrarlo ocupado.
+- `mongo-express` usa el **8082** y no el 8081, que suele estar ocupado por
+  otros proyectos.
+- Mongo declara un **volumen**. La primera versión no lo tenía, así que los
+  datos se perdían con cada `docker compose down`.
+
+## Las credenciales salen del repositorio
+
+La primera versión de este archivo llevaba el usuario y la contraseña de Mongo
+escritos dentro, y ese archivo se subía a un repositorio público. Ahora todos
+los valores vienen de un `.env` que está en `.gitignore`:
+
+```yaml
+environment:
+  MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+  MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+```
+
+`.env.example` documenta cada variable con un valor de ejemplo. Se copia y se
+rellena:
+
+```bash
+cp .env.example .env
+```
+
+## Arranque ordenado
+
+El backend no arranca hasta que Mongo acepta conexiones, y el frontend no
+arranca hasta que el backend responde:
+
+```yaml
+depends_on:
+  mongo:
+    condition: service_healthy
+```
+
+`service_healthy` espera al `healthcheck`, no solo a que el contenedor exista.
+Sin eso el backend moría al intentar conectar contra una base de datos que
+todavía estaba iniciándose.
+
+## Las imágenes
+
+Ambas usan construcción **multietapa**: se compila en una imagen con todas las
+herramientas y solo el resultado viaja a la imagen final.
+
+- **Backend**: compila TypeScript y copia a la imagen final únicamente el
+  JavaScript resultante, sin fuentes `.ts` ni compilador. Las dependencias se
+  instalan una sola vez y se podan con `npm prune --omit=dev`, que trabaja sobre
+  el árbol ya descargado. Antes se reinstalaban en la etapa final, lo que
+  duplicaba la descarga y era donde el registro de npm cortaba la conexión.
+- **Frontend**: compila con Vite y sirve el resultado con **nginx**, que incluye
+  `try_files ... /index.html` para que recargar una ruta del cliente devuelva la
+  aplicación y no un 404.
+
+El contexto de construcción de ambas es la **raíz del repositorio**, no su
+propia carpeta, porque las dos dependen del paquete compartido `shared/`.
+
+## Comprobar que está todo bien
+
+```bash
+docker compose ps
+```
+
+Los cuatro servicios deben aparecer como `healthy`. Si el backend no lo está:
+
+```bash
+docker compose logs backend
+```
 
 \pagebreak

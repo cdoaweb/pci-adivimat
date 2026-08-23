@@ -1,21 +1,53 @@
 @startuml Diagrama entidad relación
 
+' Tema, Subtema y Adivinanza no son colecciones independientes: viven en un
+' mismo documento de MongoDB. Subtema y Adivinanza son subdocumentos anidados,
+' y por eso su identificador lo asigna Mongo dentro del documento padre.
+
 entity Tema {
-    +id: int
-    +tema: string
+    +id: ObjectId
+    --
+    tema: string
 }
 
 entity Subtema {
-    +name: string
+    +id: ObjectId
+    --
+    name: string
 }
 
 entity Adivinanza {
-    +id: int
-    +pregunta: string
-    +respuesta: string
+    +id: ObjectId
+    --
+    numero: int
+    pregunta: string
+    respuesta: string
+    respuestasAceptadas: string[]
+    pista: string
+    dificultad: basica | avanzada
+    intentos: int
 }
 
-Tema ||--o Subtema : tiene
-Subtema ||--o Adivinanza : tiene
+entity User {
+    +id: ObjectId
+    --
+    username: string
+    email: string
+    password: string
+    isAdmin: boolean
+}
+
+note bottom of Adivinanza
+  `intentos` es el CUPO que concede la adivinanza,
+  igual para todos los jugadores.
+
+  Los puntos y el avance NO estan aqui: son de cada
+  jugador y se guardan en su dispositivo. Cuando
+  estaban en la adivinanza, los fallos de uno
+  consumian los intentos de todos.
+end note
+
+Tema ||--o{ Subtema : contiene
+Subtema ||--o{ Adivinanza : contiene
 
 @enduml

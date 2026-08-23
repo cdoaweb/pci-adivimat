@@ -9,17 +9,29 @@ el álgebra y la geometría, sin la necesidad de registro, promoviendo un acceso
 directo al contenido educativo.
 
 ## Documentación
-[Portada](docs/00-Portada.md)
-[Introducción](docs/01-Introduccion.md)
-[Presentación](docs/01-Presentacion.md)
-[Diagramas de caso de uso](docs/Descripcion-de-Diagramas-caso-de-uso.md)
-[Diagrama de la base de datos](docs/DescripcionDiagramaDB.md)
-### Importante ver los archivos:
-**caso-de-uso-backend.wsd, caso-de-uso-frontend.wsd y DiagramaDB.wsd**
-[Tecnologías](docs/02-tecnologias.md)
-[Implementación](docs/05-Implementacion.md)
-[Conclusiones](docs/06-conclusiones.md)
-[Bibliografía](docs/07-bibliografia.md)
+
+| Documento | Contenido |
+| --- | --- |
+| [Portada](docs/00-Portada.md) | |
+| [Introducción](docs/01-Introduccion.md) | Datos del proyecto y planificación |
+| [Presentación](docs/01-Presentacion.md) | Diapositivas |
+| [Tecnologías](docs/02-tecnologias.md) | Qué se usa y por qué, con la estructura de cada paquete |
+| [Docker](docs/03-docker.md) | Los cuatro servicios y los dos archivos de compose |
+| [Cliente web](docs/04-react.md) | React, TypeScript y Vite |
+| [Implementación](docs/05-Implementacion.md) | El código explicado, con las decisiones detrás |
+| [Conclusiones](docs/06-conclusiones.md) | Reflexión sobre el proyecto |
+| [Bibliografía](docs/07-bibliografia.md) | Fuentes consultadas |
+| [Evolución del proyecto](docs/08-evolucion.md) | Qué ha cambiado desde la memoria de 2024 |
+| [Diagramas de caso de uso](docs/Descripcion-de-Diagramas-caso-de-uso.md) | Actores y funcionalidades |
+| [Diagrama de la base de datos](docs/DescripcionDiagramaDB.md) | Entidades y por qué van anidadas |
+
+Los diagramas en PlantUML están en `caso-de-uso-backend.wsd`,
+`caso-de-uso-frontend.wsd` y `DiagramaDB.wsd`.
+
+> Los apartados 00 a 07 son la memoria del proyecto tal como se entregó en junio
+> de 2024, con los datos técnicos puestos al día. Lo que ha cambiado en la
+> arquitectura desde entonces está recogido aparte, en
+> [Evolución del proyecto](docs/08-evolucion.md).
 ## Puesta en marcha
 
 Requisitos: Docker y Node 22.

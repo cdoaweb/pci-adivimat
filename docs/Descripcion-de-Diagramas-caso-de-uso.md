@@ -157,12 +157,19 @@ eliminarAdivinanza --> verAdivinanzas
 
 ```
 
+> **Nota.** Jugar no requiere cuenta: listar temas, subtemas y adivinanzas y
+> responderlas son operaciones publicas. La sesion solo hace falta para
+> gestionar el contenido.
+
 ### Actores
 - **Usuario**: Interactúa con las funcionalidades de ver y resolver.
 - **Administrador**: Tiene acceso completo a las funcionalidades de gestión y administración.
 
 #### Funcionalidades
-- **Registrarse**: Permite a un nuevo administrador registrarse en el sistema.
+- **Registrarse**: Permite dar de alta un administrador. El alta **no es
+  publica**: solo lo es la del primer administrador, que se autoriza con el
+  `ADMIN_CODE` del `.env`. En cuanto existe uno, ese codigo deja de aceptarse y
+  las cuentas nuevas las crea un administrador ya autenticado.
 - **Iniciar Sesión**: Permite a los administradores autenticarse en el sistema.
 - **Cerrar Sesión**: Permite a los administradores cerrar su sesión.
 - **Ver Temas**: Permite ver la lista de temas disponibles.
