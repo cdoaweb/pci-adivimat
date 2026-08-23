@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { PUNTOS_POR_ACIERTO, esRespuestaCorrecta, registrarIntento } from '@adivimat/shared';
+import {
+  PUNTOS_POR_ACIERTO,
+  esRespuestaCorrecta,
+  generarOpciones,
+  registrarIntento,
+} from '@adivimat/shared';
 
 /**
  * La logica de juego se comprueba una sola vez, en el paquete compartido que
@@ -85,5 +90,59 @@ describe('correccion de respuestas', () => {
   it('respeta la enye: "ano" no es "año"', () => {
     expect(esRespuestaCorrecta({ respuesta: 'año' }, 'ano')).toBe(false);
     expect(esRespuestaCorrecta({ respuesta: 'año' }, 'AÑO')).toBe(true);
+  });
+});
+
+/**
+ * Opcion multiple.
+ *
+ * `aleatorio` se inyecta para que el resultado no dependa del azar y las
+ * pruebas no fallen de vez en cuando.
+ */
+describe('opciones de eleccion multiple', () => {
+  const fijo = () => 0.5;
+  const pool = ['recta', 'punto', 'segmento', 'semirrecta', 'mediatriz', 'bisectriz'];
+
+  it('devuelve el numero pedido, con una sola correcta y sin repetir', () => {
+    const opciones = generarOpciones('recta', pool, 4, fijo);
+    expect(opciones).toHaveLength(4);
+    expect(opciones.filter((o) => o.correcta)).toHaveLength(1);
+    expect(opciones.find((o) => o.correcta)?.texto).toBe('recta');
+    expect(new Set(opciones.map((o) => o.texto)).size).toBe(4);
+  });
+
+  it('descarta senuelos que en realidad son la respuesta correcta', () => {
+    // El libro resuelve tres adivinanzas con "bisectriz": sin este filtro
+    // podrian aparecer dos opciones validas en la misma pregunta.
+    const opciones = generarOpciones(
+      'bisectriz',
+      ['bisectriz', 'BISECTRIZ', 'la bisectriz', 'recta', 'punto'],
+      4,
+      fijo,
+    );
+    const validas = opciones.filter((o) =>
+      esRespuestaCorrecta({ respuesta: 'bisectriz' }, o.texto),
+    );
+    expect(validas).toHaveLength(1);
+  });
+
+  it('no inventa opciones cuando faltan senuelos', () => {
+    expect(generarOpciones('recta', [], 4, fijo)).toHaveLength(1);
+    expect(generarOpciones('recta', ['punto'], 4, fijo)).toHaveLength(2);
+  });
+
+  it('no muta la lista de candidatas', () => {
+    const copia = [...pool];
+    generarOpciones('recta', copia, 4, fijo);
+    expect(copia).toEqual(pool);
+  });
+
+  it('coloca la correcta en posiciones distintas', () => {
+    const posiciones = new Set(
+      Array.from({ length: 60 }, () =>
+        generarOpciones('recta', pool, 4).findIndex((o) => o.correcta),
+      ),
+    );
+    expect(posiciones.size).toBeGreaterThan(1);
   });
 });

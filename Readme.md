@@ -197,15 +197,40 @@ de un segmento". Se aceptan por tanto:
 
 La enye si se respeta: `ano` no es `año`.
 
+### Dos formas de responder
+
+El jugador elige, y la preferencia se recuerda entre sesiones:
+
+- **Escribiendo la respuesta.** El modo completo. Un acierto vale 10 puntos.
+- **Eligiendo entre cuatro opciones.** Pensado para lectores de pantalla, donde
+  teclear "circunferencia circunscrita" es costoso, y para quien esta empezando
+  con el temario.
+
+Los senuelos salen de otras adivinanzas **del mismo subtema**: mezclar una
+respuesta de geometria en una pregunta de funciones la delataria sin necesidad
+de leer el enunciado. Se descartan ademas los senuelos que en realidad son la
+respuesta correcta, porque el libro resuelve varias adivinanzas con la misma
+palabra ("bisectriz" es la solucion de tres).
+
+En opcion multiple el acierto vale 5 puntos y no 10, y los intentos bajan a 2:
+con cuatro opciones a la vista se acierta una de cada cuatro veces por azar, y
+conservar cinco intentos permitiria resolverla por descarte sin saber la
+respuesta. Las opciones falladas quedan tachadas y desactivadas.
+
+Se usa un grupo de radios y no botones que respondan al pulsar: con un lector de
+pantalla, los radios dejan recorrer las opciones con las flechas y oirlas todas
+antes de comprometerse.
+
 ### Ayudas durante la partida
 
 - Tras el primer fallo aparece el **matiz del libro** (59 adivinanzas lo
   tienen). Es lo que distingue preguntas con la misma respuesta: tres piden
   "bisectriz", una como eje de simetria y otra por distancia.
 - Tras el segundo, la **forma de la respuesta**: inicial y numero de letras, o
-  cuantas palabras son.
+  cuantas palabras son. Solo en el modo escrito: con las opciones a la vista no
+  aporta nada.
 - Las 27 que el autor marco con asterisco salen etiquetadas como *avanzada* y
-  dan 7 intentos en lugar de 5.
+  dan 7 intentos en lugar de 5 (2 en opcion multiple, como el resto).
 - Las adivinanzas se reparten **sin repetir** hasta agotar el subtema, y el
   marcador muestra aciertos, puntos y cuantas quedan.
 

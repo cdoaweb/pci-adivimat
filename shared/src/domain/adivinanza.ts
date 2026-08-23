@@ -9,8 +9,17 @@ import type { ResponderResponse } from '../types/api';
  * mismo codigo corre en Node, en el navegador y en Hermes (React Native).
  */
 
-/** Puntos que otorga un acierto. */
+/** Puntos que otorga un acierto escribiendo la respuesta. */
 export const PUNTOS_POR_ACIERTO = 10;
+
+/**
+ * Puntos que otorga un acierto en opcion multiple.
+ *
+ * Valen la mitad: con cuatro opciones a la vista se acierta una de cada cuatro
+ * veces por puro azar, asi que pagarlo igual que escribir la respuesta de
+ * memoria falsearia el marcador.
+ */
+export const PUNTOS_POR_ACIERTO_OPCIONES = 5;
 
 /** Intentos con los que arranca una adivinanza nueva. */
 export const INTENTOS_POR_DEFECTO = 5;
@@ -116,6 +125,8 @@ export interface ResultadoIntento {
 export function registrarIntento(
   estado: EstadoAdivinanza,
   respuestaUsuario: string,
+  /** Cuanto vale el acierto. Menos en opcion multiple, que es mas facil. */
+  puntosPorAcierto: number = PUNTOS_POR_ACIERTO,
 ): ResultadoIntento {
   if (estado.intentos <= 0) {
     const revelado: EstadoAdivinanza = { ...estado, respuestaRevelada: true };
@@ -135,7 +146,7 @@ export function registrarIntento(
   const intentosRestantes = estado.intentos - 1;
 
   if (esRespuestaCorrecta(estado, respuestaUsuario)) {
-    const puntos = estado.puntos + PUNTOS_POR_ACIERTO;
+    const puntos = estado.puntos + puntosPorAcierto;
     return {
       estado: { ...estado, intentos: intentosRestantes, puntos },
       resultado: {
@@ -166,4 +177,84 @@ export function registrarIntento(
       ...(respuestaRevelada ? { respuesta: estado.respuesta } : {}),
     },
   };
+}
+
+/* ------------------------------------------------------ opcion multiple -- */
+
+export interface OpcionRespuesta {
+  texto: string;
+  correcta: boolean;
+}
+
+/** Numero de opciones por defecto: la correcta y tres senuelos. */
+export const OPCIONES_POR_DEFECTO = 4;
+
+/**
+ * En opcion multiple se acorta el margen: con cuatro opciones, conservar los
+ * cinco o siete intentos del modo escrito permitiria acertar por descarte sin
+ * saber la respuesta.
+ */
+export const INTENTOS_OPCION_MULTIPLE = 2;
+
+/**
+ * Construye las opciones de una pregunta de eleccion multiple.
+ *
+ * Los senuelos salen de `candidatas`, que deben ser respuestas de adivinanzas
+ * del mismo subtema: si se mezclasen respuestas de geometria en una pregunta de
+ * funciones, la correcta se distinguiria a simple vista sin leer el enunciado.
+ *
+ * `aleatorio` se recibe como parametro para poder fijarlo en las pruebas.
+ *
+ * Devuelve menos opciones de las pedidas si no hay senuelos suficientes, y solo
+ * la correcta si no hay ninguno.
+ */
+export function generarOpciones(
+  correcta: string,
+  candidatas: readonly string[],
+  total: number = OPCIONES_POR_DEFECTO,
+  aleatorio: () => number = Math.random,
+): OpcionRespuesta[] {
+  const claveCorrecta = normalizarRespuesta(correcta);
+
+  /* Se descartan repetidas y las que en realidad son la respuesta correcta: el
+     libro resuelve varias adivinanzas con la misma palabra ("bisectriz" es la
+     solucion de tres), asi que sin esto podrian aparecer dos opciones validas. */
+  const vistas = new Set<string>([claveCorrecta]);
+  const senuelos: string[] = [];
+
+  for (const candidata of candidatas) {
+    const clave = normalizarRespuesta(candidata);
+    if (!clave || vistas.has(clave)) continue;
+    vistas.add(clave);
+    senuelos.push(candidata);
+  }
+
+  /* Barajado de Fisher-Yates sobre una copia: `candidatas` no se toca. */
+  for (let i = senuelos.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(aleatorio() * (i + 1));
+    const a = senuelos[i];
+    const b = senuelos[j];
+    if (a !== undefined && b !== undefined) {
+      senuelos[i] = b;
+      senuelos[j] = a;
+    }
+  }
+
+  const opciones: OpcionRespuesta[] = senuelos
+    .slice(0, Math.max(total - 1, 0))
+    .map((texto) => ({ texto, correcta: false }));
+
+  opciones.push({ texto: correcta, correcta: true });
+
+  for (let i = opciones.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(aleatorio() * (i + 1));
+    const a = opciones[i];
+    const b = opciones[j];
+    if (a !== undefined && b !== undefined) {
+      opciones[i] = b;
+      opciones[j] = a;
+    }
+  }
+
+  return opciones;
 }
