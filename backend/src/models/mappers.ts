@@ -22,8 +22,6 @@ export function toAdivinanza(doc: AdivinanzaDoc): Adivinanza {
     ...(doc.pista ? { pista: doc.pista } : {}),
     dificultad: doc.dificultad,
     intentos: doc.intentos,
-    puntos: doc.puntos,
-    respuestaRevelada: doc.respuestaRevelada,
   };
 }
 

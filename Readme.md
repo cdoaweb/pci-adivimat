@@ -234,6 +234,34 @@ antes de comprometerse.
 - Las adivinanzas se reparten **sin repetir** hasta agotar el subtema, y el
   marcador muestra aciertos, puntos y cuantas quedan.
 
+### Puntuacion y progreso
+
+El progreso se guarda **en el dispositivo de quien juega**, no en el servidor.
+La aplicacion existe para practicar sin registrarse, asi que no hay cuenta a la
+que asociarlo: en web vive en `localStorage` y en la futura app movil vivira en
+su propio almacen. La logica esta en `@adivimat/shared`, en funciones puras
+sobre un objeto serializable, de modo que cambiar de almacen no toca las reglas.
+
+Se guarda por adivinanza: si esta resuelta, cuantos intentos ha costado y
+cuantos puntos ha dado. Los **puntos se conceden una sola vez**: repetir una
+adivinanza ya acertada no vuelve a sumar, o el marcador dejaria de significar
+nada. Los intentos si se acumulan, porque describen cuanto ha costado.
+
+El reparto prefiere las adivinanzas aun sin resolver, y solo vuelve a repetir
+cuando el subtema esta completo. Hay un boton para borrar el progreso, que
+pregunta antes porque no hay copia en ningun sitio.
+
+Si el almacenamiento esta corrupto o es de otra version, se empieza de cero en
+lugar de fallar: perder la puntuacion es molesto, pero mucho menos que dejar la
+aplicacion sin arrancar.
+
+**`POST /api/respuesta` no guarda nada.** Antes descontaba los intentos sobre la
+propia adivinanza y hacia `save()`, pero la adivinanza es contenido compartido:
+los fallos de un jugador consumian los intentos de todos los demas y, al
+agotarse, marcaban la respuesta como revelada para siempre en el temario. El
+campo `intentos` de una adivinanza es ahora el **cupo** que concede, igual para
+todos, y quien juega lleva la cuenta de los suyos.
+
 ## Estructura
 
 ```

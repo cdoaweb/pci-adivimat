@@ -90,6 +90,14 @@ export type AdivinanzaResponse = Adivinanza;
 
 export interface ResponderRequest {
   respuestaUsuario: string;
+  /**
+   * Intentos que le quedan a quien juega.
+   *
+   * Lo aporta el cliente porque el servidor no guarda partidas: la adivinanza
+   * es contenido compartido y su `intentos` es el cupo, igual para todos. Si no
+   * viene, se parte de ese cupo.
+   */
+  intentosRestantes?: number;
 }
 
 /**

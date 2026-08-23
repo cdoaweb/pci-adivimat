@@ -91,8 +91,6 @@ async function main(): Promise<void> {
         ...(a.pista ? { pista: a.pista } : {}),
         dificultad: a.dificultad,
         intentos: a.intentos,
-        puntos: 0,
-        respuestaRevelada: false,
       })),
     })),
   }));

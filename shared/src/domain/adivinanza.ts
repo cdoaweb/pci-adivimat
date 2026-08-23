@@ -100,12 +100,22 @@ export function esRespuestaCorrecta(
   return validas.some((valida) => sinPlural(valida) === intentoSingular);
 }
 
-/** Estado mutable de una adivinanza durante una partida. */
-export type EstadoAdivinanza = Pick<
-  Adivinanza,
-  'respuesta' | 'intentos' | 'puntos' | 'respuestaRevelada'
-> &
-  Partial<Pick<Adivinanza, 'respuestasAceptadas'>>;
+/**
+ * Estado de una adivinanza dentro de una partida.
+ *
+ * Vive en quien juega, no en el temario: `intentos` son los que le quedan a
+ * este jugador, y `puntos` y `respuestaRevelada` describen su partida.
+ */
+export interface EstadoAdivinanza {
+  respuesta: string;
+  respuestasAceptadas?: string[];
+  /** Intentos que le quedan al jugador. Nunca negativo. */
+  intentos: number;
+  /** Puntos conseguidos en esta adivinanza. */
+  puntos: number;
+  /** true cuando se agotan los intentos y se muestra la solucion. */
+  respuestaRevelada: boolean;
+}
 
 export interface ResultadoIntento {
   /** Nuevo estado. El de entrada no se modifica. */

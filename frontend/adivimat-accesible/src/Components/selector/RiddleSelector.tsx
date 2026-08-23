@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   type Adivinanza,
@@ -8,11 +8,14 @@ import {
   INTENTOS_POR_DEFECTO,
   PUNTOS_POR_ACIERTO,
   PUNTOS_POR_ACIERTO_OPCIONES,
+  estaResuelta,
   generarOpciones,
   registrarIntento,
+  resumirProgreso,
 } from '@adivimat/shared';
 
 import { api, mensajeDeError } from '../../lib/api';
+import { useProgreso } from '../../lib/useProgreso';
 import RespuestaEscrita from './RespuestaEscrita';
 import RespuestaOpciones from './RespuestaOpciones';
 
@@ -37,12 +40,6 @@ const CLAVE_MODO = 'adivimat:modo-respuesta';
 const FALLOS_PARA_PISTA = 1;
 const FALLOS_PARA_INICIAL = 2;
 
-interface Marcador {
-  acertadas: number;
-  jugadas: number;
-  puntos: number;
-}
-
 function leerModo(): Modo {
   return localStorage.getItem(CLAVE_MODO) === 'opciones' ? 'opciones' : 'escrita';
 }
@@ -55,7 +52,16 @@ function RiddleSelector({ temaId, subtemaId }: RiddleSelectorProps) {
   const [opciones, setOpciones] = useState<OpcionRespuesta[]>([]);
   const [descartadas, setDescartadas] = useState<Set<string>>(new Set());
   const [fallos, setFallos] = useState(0);
-  const [marcador, setMarcador] = useState<Marcador>({ acertadas: 0, jugadas: 0, puntos: 0 });
+  /* Intentos gastados en la adivinanza actual, para anotarlos al terminarla. */
+  const [intentosUsados, setIntentosUsados] = useState(0);
+  const { progreso, registrar, reiniciar } = useProgreso();
+
+  /* El reparto necesita el progreso mas reciente, pero no debe rehacerse cada
+     vez que este cambia: se consulta por referencia en lugar de por dependencia. */
+  const progresoRef = useRef(progreso);
+  useEffect(() => {
+    progresoRef.current = progreso;
+  }, [progreso]);
   const [modo, setModo] = useState<Modo>(leerModo);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,8 +83,13 @@ function RiddleSelector({ temaId, subtemaId }: RiddleSelectorProps) {
    */
   const siguiente = useCallback(
     (bolsa: Adivinanza[], todas: Adivinanza[], modoActual: Modo, pool: string[]) => {
-      const disponibles = bolsa.length > 0 ? bolsa : todas;
-      if (disponibles.length === 0) return;
+      const restantes = bolsa.length > 0 ? bolsa : todas;
+      if (restantes.length === 0) return;
+
+      /* Primero lo que sigue sin resolver: repetir lo ya acertado no da puntos
+         y aburre. Si no queda nada pendiente, se reparte de todo el subtema. */
+      const sinResolver = restantes.filter((a) => !estaResuelta(progresoRef.current, a.id));
+      const disponibles = sinResolver.length > 0 ? sinResolver : restantes;
 
       const indice = Math.floor(Math.random() * disponibles.length);
       const elegida = disponibles[indice];
@@ -86,7 +97,7 @@ function RiddleSelector({ temaId, subtemaId }: RiddleSelectorProps) {
 
       const intentosBase = elegida.intentos || INTENTOS_POR_DEFECTO;
 
-      setPendientes(disponibles.filter((_, i) => i !== indice));
+      setPendientes(restantes.filter((a) => a.id !== elegida.id));
       setActual(elegida);
       setEstado({
         respuesta: elegida.respuesta,
@@ -105,6 +116,7 @@ function RiddleSelector({ temaId, subtemaId }: RiddleSelectorProps) {
       );
       setDescartadas(new Set());
       setFallos(0);
+      setIntentosUsados(0);
       setAnnouncement(`Nueva adivinanza: ${elegida.pregunta}`);
     },
     [],
@@ -123,7 +135,6 @@ function RiddleSelector({ temaId, subtemaId }: RiddleSelectorProps) {
           setActual(null);
         } else {
           setAdivinanzas(data);
-          setMarcador({ acertadas: 0, jugadas: 0, puntos: 0 });
           siguiente(data, data, leerModo(), data.map((a) => a.respuesta));
         }
       } catch (err) {
@@ -161,12 +172,13 @@ function RiddleSelector({ temaId, subtemaId }: RiddleSelectorProps) {
     );
     setEstado(nuevo);
 
+    const usados = intentosUsados + 1;
+    setIntentosUsados(usados);
+
     if (resultado.correcta) {
-      setMarcador((m) => ({
-        acertadas: m.acertadas + 1,
-        jugadas: m.jugadas + 1,
-        puntos: m.puntos + resultado.puntos,
-      }));
+      /* Los puntos solo se conceden la primera vez que se acierta cada
+         adivinanza; de eso se encarga `registrarResultado`. */
+      registrar(actual.id, { acertada: true, intentosUsados: usados, puntos: resultado.puntos });
       setAnnouncement(`Correcto: ${actual.respuesta}. Vamos con la siguiente.`);
       pasarASiguiente();
       return;
@@ -179,7 +191,7 @@ function RiddleSelector({ temaId, subtemaId }: RiddleSelectorProps) {
     }
 
     if (resultado.respuestaRevelada) {
-      setMarcador((m) => ({ ...m, jugadas: m.jugadas + 1 }));
+      registrar(actual.id, { acertada: false, intentosUsados: usados, puntos: 0 });
       setAnnouncement(`Se acabaron los intentos. La respuesta es: ${actual.respuesta}`);
     } else {
       const n = resultado.intentosRestantes;
@@ -187,10 +199,18 @@ function RiddleSelector({ temaId, subtemaId }: RiddleSelectorProps) {
     }
   };
 
+  const confirmarReinicio = () => {
+    /* Es irreversible y no hay copia en ningun servidor: se pregunta antes. */
+    if (window.confirm('Se borrara toda tu puntuacion. Esta accion no se puede deshacer.')) {
+      reiniciar();
+      setAnnouncement('Progreso borrado');
+    }
+  };
+
   const rendirse = () => {
     if (!estado || !actual) return;
     setEstado({ ...estado, intentos: 0, respuestaRevelada: true });
-    setMarcador((m) => ({ ...m, jugadas: m.jugadas + 1 }));
+    registrar(actual.id, { acertada: false, intentosUsados, puntos: 0 });
     setAnnouncement(`La respuesta es: ${actual.respuesta}`);
   };
 
@@ -199,6 +219,9 @@ function RiddleSelector({ temaId, subtemaId }: RiddleSelectorProps) {
   if (!actual || !estado) return <p>No hay adivinanza disponible.</p>;
 
   const revelada = estado.respuestaRevelada;
+  const yaResuelta = estaResuelta(progreso, actual.id);
+  const avanceSubtema = resumirProgreso(progreso, adivinanzas.map((a) => a.id));
+  const avanceTotal = resumirProgreso(progreso);
 
   /* Ayudas escalonadas, solo tras fallar, para no regalarlas de entrada. */
   const mostrarPista = !revelada && Boolean(actual.pista) && fallos >= FALLOS_PARA_PISTA;
@@ -277,10 +300,18 @@ function RiddleSelector({ temaId, subtemaId }: RiddleSelectorProps) {
       {revelada && <p>La respuesta es: {actual.respuesta}</p>}
       {!revelada && <p>Intentos restantes: {estado.intentos}</p>}
 
-      <p>
-        Aciertos: {marcador.acertadas} de {marcador.jugadas} · Puntos: {marcador.puntos} · Quedan{' '}
-        {pendientes.length} de {adivinanzas.length} en este subtema
-      </p>
+      <section>
+        <h4>Tu progreso</h4>
+        <p>
+          Este subtema: {avanceSubtema.resueltas} de {adivinanzas.length} resueltas
+          {avanceSubtema.resueltas === adivinanzas.length && adivinanzas.length > 0 && ' · completo'}
+        </p>
+        <p>
+          En total: {avanceTotal.resueltas} adivinanzas resueltas y {avanceTotal.puntos} puntos
+        </p>
+        {yaResuelta && <p>Esta ya la habias resuelto; repetirla no suma puntos.</p>}
+        <button onClick={confirmarReinicio}>Borrar mi progreso</button>
+      </section>
     </div>
   );
 }

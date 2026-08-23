@@ -39,9 +39,8 @@ export interface IAdivinanza {
   /** Matiz del libro sobre que aspecto del concepto se pregunta. */
   pista?: string;
   dificultad: Dificultad;
+  /** Cupo de intentos que concede la adivinanza, igual para todos. */
   intentos: number;
-  puntos: number;
-  respuestaRevelada: boolean;
 }
 
 export type AdivinanzaDoc = HydratedArraySubdocument<IAdivinanza>;
@@ -56,14 +55,8 @@ export const AdivinanzaSchema = new Schema<IAdivinanza>({
   intentos: {
     type: Number,
     default: INTENTOS_POR_DEFECTO,
-    min: [0, 'Los intentos no pueden ser negativos'],
+    min: [1, 'La adivinanza debe conceder al menos un intento'],
   },
-  puntos: {
-    type: Number,
-    default: 0,
-    min: [0, 'Los puntos no pueden ser negativos'],
-  },
-  respuestaRevelada: { type: Boolean, default: false },
 });
 
 AdivinanzaSchema.index({ pregunta: 1 });

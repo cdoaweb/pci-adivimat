@@ -35,12 +35,15 @@ export interface Adivinanza {
    */
   pista?: string;
   dificultad: Dificultad;
-  /** Intentos que le quedan al usuario. Nunca negativo. */
+  /**
+   * Cuantos intentos concede esta adivinanza.
+   *
+   * Es un cupo del contenido, igual para todos, no lo que le queda a nadie.
+   * Antes se descontaba sobre este mismo campo, de modo que los fallos de un
+   * jugador consumian los intentos de todos los demas y, al agotarse, la
+   * respuesta quedaba revelada para siempre en el temario.
+   */
   intentos: number;
-  /** Puntos acumulados en esta adivinanza. Nunca negativo. */
-  puntos: number;
-  /** Pasa a true cuando se agotan los intentos y se revela la respuesta. */
-  respuestaRevelada: boolean;
 }
 
 export interface Subtema {

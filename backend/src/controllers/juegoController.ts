@@ -144,21 +144,38 @@ export async function cambiarSubtema(
 }
 
 /**
- * Registra un intento de respuesta.
+ * Evalua un intento de respuesta.
  *
- * La decision de si acierta, cuantos intentos quedan y cuando se revela la
- * respuesta la toma `registrarIntento` en `@adivimat/shared`. Aqui solo se
- * persiste el estado que devuelve.
+ * No guarda nada. Antes descontaba los intentos sobre la propia adivinanza y
+ * hacia `save()`, pero esa adivinanza es contenido compartido: los fallos de un
+ * jugador consumian los intentos de todos los demas y, al agotarse, marcaban la
+ * respuesta como revelada para siempre en el temario.
+ *
+ * El progreso de cada jugador vive ahora en su dispositivo, porque la
+ * aplicacion se juega sin cuenta y no hay a quien asociarlo en el servidor.
+ * Este endpoint queda como forma de resolver un intento sin llevar la logica en
+ * el cliente; la web usa `registrarIntento` de @adivimat/shared directamente.
+ *
+ * `intentosRestantes` lo aporta quien juega. Si no viene, se parte del cupo que
+ * concede la adivinanza.
  */
 export async function responder(
   req: Request<{ subtemaId: string; adivinanzaId: string }, unknown, Partial<ResponderRequest>>,
   res: Response<ResponderResponse | ApiError>,
 ): Promise<void> {
   try {
-    const { respuestaUsuario } = req.body;
+    const { respuestaUsuario, intentosRestantes } = req.body;
 
     if (typeof respuestaUsuario !== 'string') {
       res.status(400).json({ message: 'Falta el campo respuestaUsuario' });
+      return;
+    }
+
+    if (
+      intentosRestantes !== undefined &&
+      (!Number.isInteger(intentosRestantes) || intentosRestantes < 0)
+    ) {
+      res.status(400).json({ message: 'intentosRestantes debe ser un entero no negativo' });
       return;
     }
 
@@ -168,28 +185,22 @@ export async function responder(
       return;
     }
 
-    const { tema, subtema } = encontrado;
-    const adivinanza = subtema.adivinanzas.id(req.params.adivinanzaId);
-
+    const adivinanza = encontrado.subtema.adivinanzas.id(req.params.adivinanzaId);
     if (!adivinanza) {
       res.status(404).json({ message: 'Adivinanza no encontrada' });
       return;
     }
 
-    const { estado, resultado } = registrarIntento(
+    const { resultado } = registrarIntento(
       {
         respuesta: adivinanza.respuesta,
-        intentos: adivinanza.intentos,
-        puntos: adivinanza.puntos,
-        respuestaRevelada: adivinanza.respuestaRevelada,
+        respuestasAceptadas: adivinanza.respuestasAceptadas,
+        intentos: intentosRestantes ?? adivinanza.intentos,
+        puntos: 0,
+        respuestaRevelada: false,
       },
       respuestaUsuario,
     );
-
-    adivinanza.intentos = estado.intentos;
-    adivinanza.puntos = estado.puntos;
-    adivinanza.respuestaRevelada = estado.respuestaRevelada;
-    await tema.save();
 
     res.json(resultado);
   } catch (error) {
