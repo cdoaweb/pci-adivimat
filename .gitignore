@@ -33,3 +33,10 @@ yarn-error.log*
 # salida de compilacion de TypeScript
 dist/
 *.tsbuildinfo
+
+# Contenido del libro ADIVIMAT: no se versiona.
+# Es obra de Jose Enrique Fernandez del Campo y se distribuye aparte; el
+# repositorio solo guarda el script que lo extrae del PDF.
+backend/seed/adivinanzas.json
+*.pdf
+advm.txt

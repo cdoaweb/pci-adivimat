@@ -1,10 +1,11 @@
 import mongoose from 'mongoose';
 
 import { createApp } from './app';
-import { config } from './config/env';
+import { aplicarDnsPersonalizado, config } from './config/env';
 
 /** Arranca el servidor: primero la base de datos, despues el puerto. */
 async function main(): Promise<void> {
+  aplicarDnsPersonalizado();
   await mongoose.connect(config.mongoUri);
   console.log('Conexion exitosa a MongoDB');
 

@@ -147,11 +147,26 @@ Levanta tambien `mongo` y `mongo-express`.
 No hace falta tocar codigo: mongoose entiende `mongodb+srv://` y negocia TLS por
 su cuenta.
 
+**Si falla con `querySrv ECONNREFUSED`**, no es un problema de credenciales ni
+del filtro de IP: es que el resolvedor DNS propio de Node no consigue leer el
+registro SRV, aunque el sistema resuelva ese mismo nombre sin problema (pasa en
+Windows). Se arregla apuntando a un DNS publico:
+
+```
+DNS_SERVERS=1.1.1.1,8.8.8.8
+```
+
+Dentro de Docker no hace falta: el DNS del contenedor resuelve SRV.
+
 ## Contenido: las 304 adivinanzas
 
-El temario sale del libro *ADIVIMAT*, de Jose Enrique Fernandez del Campo, y
-esta en `backend/seed/adivinanzas.json`: 7 temas, 17 subtemas y las 304
-adivinanzas con su respuesta.
+El temario sale del libro *ADIVIMAT*, de Jose Enrique Fernandez del Campo:
+7 temas, 17 subtemas y las 304 adivinanzas con su respuesta.
+
+> **El contenido no se versiona.** `backend/seed/adivinanzas.json` esta en
+> `.gitignore`, igual que el PDF. Es obra de su autor y se distribuye aparte;
+> el repositorio solo guarda el script que lo extrae. Antes de cargar nada hay
+> que generarlo.
 
 Para cargarlo:
 
@@ -166,8 +181,8 @@ reemplazarlo:
 npm run seed --workspace backend -- --reset
 ```
 
-El JSON **no se edita a mano**: lo genera `backend/seed/parse_adivimat.py` a
-partir del PDF del libro.
+El JSON **no se edita a mano** ni se versiona: lo genera
+`backend/seed/parse_adivimat.py` a partir del PDF del libro.
 
 ```bash
 pdftotext -layout -enc UTF-8 advm.pdf advm.txt

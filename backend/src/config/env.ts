@@ -1,3 +1,5 @@
+import dns from 'node:dns';
+
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -31,6 +33,8 @@ function numero(nombre: string, porDefecto: number): number {
 }
 
 export interface Config {
+  /** Servidores DNS a forzar, si el del sistema no resuelve registros SRV. */
+  dnsServers: string[];
   port: number;
   mongoUri: string;
   jwtSecret: string;
@@ -52,4 +56,26 @@ export const config: Config = {
     .map((origen) => origen.trim())
     .filter(Boolean),
   isProduction: process.env.NODE_ENV === 'production',
+  dnsServers: (process.env.DNS_SERVERS ?? '')
+    .split(',')
+    .map((servidor) => servidor.trim())
+    .filter(Boolean),
 };
+
+/**
+ * Fuerza unos servidores DNS concretos, si DNS_SERVERS los indica.
+ *
+ * Las cadenas `mongodb+srv://` de Atlas necesitan resolver un registro SRV, y
+ * el resolvedor propio de Node no siempre hereda la configuracion del sistema:
+ * en Windows puede fallar con `querySrv ECONNREFUSED` aunque el sistema resuelva
+ * ese mismo registro sin ningun problema. Apuntar a un DNS publico lo arregla.
+ *
+ * Desactivado por defecto: dentro de Docker el DNS del contenedor funciona y
+ * no hace falta.
+ */
+export function aplicarDnsPersonalizado(): void {
+  if (config.dnsServers.length === 0) return;
+
+  dns.setServers(config.dnsServers);
+  console.log(`DNS forzado a: ${config.dnsServers.join(', ')}`);
+}

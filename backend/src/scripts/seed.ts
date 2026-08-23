@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 
 import type { Dificultad } from '@adivimat/shared';
 
-import { config } from '../config/env';
+import { aplicarDnsPersonalizado, config } from '../config/env';
 import { Tema } from '../models/tema';
 
 /**
@@ -45,7 +45,24 @@ interface TemaSemilla {
 const RUTA_JSON = path.resolve(__dirname, '..', '..', 'seed', 'adivinanzas.json');
 
 function leerSemilla(): TemaSemilla[] {
-  const bruto = readFileSync(RUTA_JSON, 'utf-8');
+  let bruto: string;
+  try {
+    bruto = readFileSync(RUTA_JSON, 'utf-8');
+  } catch {
+    /* El JSON no se versiona: es el contenido del libro. Sin el, el mensaje
+       tiene que decir como regenerarlo, o esto es solo un ENOENT sin pistas. */
+    throw new Error(
+      [
+        `No se encontro ${RUTA_JSON}.`,
+        '',
+        'El temario no se versiona porque es contenido del libro ADIVIMAT.',
+        'Para regenerarlo desde el PDF:',
+        '',
+        '  pdftotext -layout -enc UTF-8 advm.pdf advm.txt',
+        '  python backend/seed/parse_adivimat.py advm.txt backend/seed/adivinanzas.json',
+      ].join('\n'),
+    );
+  }
   const datos = JSON.parse(bruto) as TemaSemilla[];
 
   if (!Array.isArray(datos) || datos.length === 0) {
@@ -57,6 +74,7 @@ function leerSemilla(): TemaSemilla[] {
 async function main(): Promise<void> {
   const reset = process.argv.includes('--reset');
 
+  aplicarDnsPersonalizado();
   await mongoose.connect(config.mongoUri, { serverSelectionTimeoutMS: 15000 });
   console.log('Conectado a MongoDB');
 
