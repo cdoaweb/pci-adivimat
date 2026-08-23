@@ -7,13 +7,15 @@
   "workspaces": [
     "shared",
     "backend",
-    "frontend/adivimat-accesible"
+    "frontend/adivimat-accesible",
+    "mobile"
   ],
   "scripts": {
     "build": "npm run build --workspace shared && npm run build --workspace backend && npm run build --workspace @adivimat/frontend",
     "dev:backend": "npm run dev --workspace backend",
     "dev:frontend": "npm run dev --workspace @adivimat/frontend",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "dev:mobile": "npm run start --workspace @adivimat/mobile"
   }
 }

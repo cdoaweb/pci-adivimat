@@ -277,12 +277,60 @@ agotarse, marcaban la respuesta como revelada para siempre en el temario. El
 campo `intentos` de una adivinanza es ahora el **cupo** que concede, igual para
 todos, y quien juega lleva la cuenta de los suyos.
 
+## App movil (Expo)
+
+`mobile/` es la app en React Native con Expo. Consume `@adivimat/shared` sin
+adaptarlo: las reglas del juego, la generacion de senuelos, la correccion de
+respuestas y el progreso son exactamente las mismas funciones que usan la web y
+el backend.
+
+```bash
+npm run dev:mobile
+```
+
+Expo abre un menu para lanzarla en Android, iOS o navegador. Con la app **Expo
+Go** en el movil, basta con escanear el codigo QR.
+
+### La URL del backend
+
+Es el detalle que mas se atraganta: en un movil, `localhost` es el propio
+telefono, no el ordenador. `mobile/src/lib/api.ts` lo resuelve en este orden:
+
+1. `EXPO_PUBLIC_API_URL`, para apuntar a un backend desplegado.
+2. La IP de la maquina que sirve el bundle, que Expo expone en `hostUri`. Al
+   estar en la misma red que el telefono, funciona sin configurar nada.
+3. `localhost`, solo util en el emulador de iOS y en web.
+
+Para que el telefono llegue al backend, ambos tienen que estar en la misma red y
+el puerto 4000 accesible desde ella.
+
+### Ejecutarla en navegador
+
+`npm run dev:mobile` y elegir *web*. Ahi si aplica CORS, asi que el origen de
+Expo tiene que estar en `CORS_ORIGINS` (ya vienen 8081 y 8090). En un
+dispositivo real no hace falta: `fetch` nativo no pasa por CORS.
+
+### Metro y el monorepo
+
+`mobile/metro.config.js` anade la raiz del monorepo a `watchFolders` y a
+`nodeModulesPaths`, o Metro no encontraria `@adivimat/shared`, que npm instala
+como enlace simbolico fuera de `mobile/`.
+
+Una advertencia si se toca ese archivo: **no actives
+`disableHierarchicalLookup`**, aunque la documentacion de Expo lo sugiera para
+monorepos. Eso solo vale cuando npm ha podido aplanar todo en un unico
+`node_modules`, y aqui no puede, porque la web usa React 18 y el movil React 19.
+Parte del arbol de Expo queda anidado en `mobile/node_modules/expo/node_modules/`
+y, con esa opcion activada, el empaquetado falla con "Unable to resolve module
+expo-asset".
+
 ## Estructura
 
 ```
 shared/    Tipos y lógica de dominio compartidos (sin dependencias de plataforma)
 backend/   API REST en TypeScript (Express + Mongoose)
 frontend/  Cliente web en React + TypeScript (Vite)
+mobile/    App movil en React Native + Expo
 ```
 
 `shared/` es neutral de plataforma a propósito: no importa `mongoose`, `express`
