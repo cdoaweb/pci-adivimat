@@ -8,7 +8,7 @@ COPY package.json package-lock.json ./
 COPY shared/package.json ./shared/
 COPY backend/package.json ./backend/
 COPY frontend/adivimat-accesible/package.json ./frontend/adivimat-accesible/
-RUN npm ci
+RUN npm ci --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=180000 --fetch-timeout=600000
 
 COPY shared ./shared
 COPY frontend/adivimat-accesible ./frontend/adivimat-accesible

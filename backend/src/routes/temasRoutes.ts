@@ -21,31 +21,53 @@ import {
   getSubtemaPorId,
   responder,
 } from '../controllers/juegoController';
+import { requireAdmin } from '../middleware/auth';
 
+/**
+ * Rutas de contenido y de partida.
+ *
+ * Criterio de acceso:
+ *
+ * - Lectura y juego: publicos. La aplicacion existe para practicar sin
+ *   registrarse, asi que listar temas y responder adivinanzas no pide sesion.
+ * - Escritura: solo administradores. Antes no lo comprobaba nadie: el unico
+ *   middleware de autorizacion se registraba con `router.use('/admin', ...)`
+ *   en authRoutes, sobre una ruta que no existia, de modo que nunca llegaba a
+ *   ejecutarse y cualquiera podia crear, editar o borrar contenido sin token.
+ */
 const router = Router();
 
 /* Temas */
-router.post('/temas', createTema);
 router.get('/temas', getTemas);
 router.get('/temas/:temaId', getTema);
-router.put('/temas/:temaId', updateTema);
+router.post('/temas', requireAdmin, createTema);
+router.put('/temas/:temaId', requireAdmin, updateTema);
 
 /* Subtemas */
-router.post('/temas/:temaId/subtemas', createSubtema);
 router.get('/temas/:temaId/subtemas', getSubtemas);
-router.put('/temas/:temaId/subtemas/:subtemaId', updateSubtema);
-router.delete('/temas/:temaId/subtemas/:subtemaId', deleteSubtema);
+router.post('/temas/:temaId/subtemas', requireAdmin, createSubtema);
+router.put('/temas/:temaId/subtemas/:subtemaId', requireAdmin, updateSubtema);
+router.delete('/temas/:temaId/subtemas/:subtemaId', requireAdmin, deleteSubtema);
 
 /* Adivinanzas */
-router.post('/temas/:temaId/subtemas/:subtemaId/adivinanzas', createAdivinanza);
 router.get('/temas/:temaId/subtemas/:subtemaId/adivinanzas', getAdivinanzas);
-router.put('/temas/:temaId/subtemas/:subtemaId/adivinanzas/:adivinanzaId', updateAdivinanza);
-router.delete('/temas/:temaId/subtemas/:subtemaId/adivinanzas/:adivinanzaId', deleteAdivinanza);
+router.post('/temas/:temaId/subtemas/:subtemaId/adivinanzas', requireAdmin, createAdivinanza);
+router.put(
+  '/temas/:temaId/subtemas/:subtemaId/adivinanzas/:adivinanzaId',
+  requireAdmin,
+  updateAdivinanza,
+);
+router.delete(
+  '/temas/:temaId/subtemas/:subtemaId/adivinanzas/:adivinanzaId',
+  requireAdmin,
+  deleteAdivinanza,
+);
 
-/* Carga masiva */
-router.post('/cargar-temas', cargarTemas);
+/* Carga masiva: inserta documentos sin limite, asi que es la que mas necesita
+   la proteccion. */
+router.post('/cargar-temas', requireAdmin, cargarTemas);
 
-/* Partida */
+/* Partida: publica a proposito, para poder jugar sin cuenta. */
 router.get('/subtemas/:subtemaId', getSubtemaPorId);
 router.get('/siguiente-adivinanza/:subtemaId/:adivinanzaId', getSiguienteAdivinanza);
 router.get('/cambiar-subtema/:temaId/:subtemaId', cambiarSubtema);

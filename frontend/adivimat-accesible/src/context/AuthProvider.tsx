@@ -2,7 +2,7 @@ import { type ReactNode, createContext, useCallback, useContext, useEffect, useM
 
 import type { LoginResponse, RegisterResponse, UserPublic } from '@adivimat/shared';
 
-import { TOKEN_KEY, USER_KEY, api, leerJSON, mensajeDeError } from '../lib/api';
+import { EVENTO_SESION_CADUCADA, TOKEN_KEY, USER_KEY, api, leerJSON, mensajeDeError } from '../lib/api';
 
 /**
  * Estado y acciones de autenticacion.
@@ -22,6 +22,7 @@ interface AuthState {
 type AuthAction =
   | { type: 'AUTH_SUCCESS'; payload: { user: UserPublic; token: string } }
   | { type: 'AUTH_FAILED'; payload: string }
+  | { type: 'SESION_CADUCADA' }
   | { type: 'LOGOUT' };
 
 const estadoInicial: AuthState = {
@@ -42,6 +43,8 @@ function authReducer(_state: AuthState, action: AuthAction): AuthState {
       };
     case 'AUTH_FAILED':
       return { ...estadoInicial, loginError: action.payload };
+    case 'SESION_CADUCADA':
+      return { ...estadoInicial, loginError: 'Tu sesion ha caducado. Vuelve a iniciar sesion.' };
     case 'LOGOUT':
       return estadoInicial;
   }
@@ -79,6 +82,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'AUTH_SUCCESS', payload: { user, token } });
     }
     setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    /* El servidor ha rechazado el token guardado (caducado o invalidado). Se
+       limpia la sesion aqui, de modo que PrivateRoute redirige solo y el
+       usuario ve el motivo en el formulario en lugar de un error opaco a mitad
+       de una edicion. */
+    const alCaducar = () => {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+      dispatch({ type: 'SESION_CADUCADA' });
+    };
+
+    window.addEventListener(EVENTO_SESION_CADUCADA, alCaducar);
+    return () => window.removeEventListener(EVENTO_SESION_CADUCADA, alCaducar);
   }, []);
 
   const guardarSesion = useCallback((user: UserPublic, token: string) => {

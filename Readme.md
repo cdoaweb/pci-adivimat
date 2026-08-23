@@ -72,6 +72,24 @@ Queda igualmente en http://localhost:3000. La URL de la API se configura con
 variables con prefijo `VITE_` llegan al bundle, y se incrustan en tiempo de
 compilación, no de ejecución.
 
+## Control de acceso
+
+| Operacion | Acceso |
+| --- | --- |
+| Listar temas, subtemas y adivinanzas | Publico |
+| Jugar (`/respuesta`, `/siguiente-adivinanza`, `/cambiar-subtema`) | Publico |
+| Crear, editar o borrar contenido | Solo administradores |
+| Carga masiva (`/cargar-temas`) | Solo administradores |
+
+Jugar no requiere cuenta, que es la premisa de la aplicacion. Todo lo que
+escribe exige una cabecera `Authorization: Bearer <token>` de un usuario con
+`isAdmin`.
+
+Las cuentas se crean en `/register` con el `ADMIN_CODE` del `.env`. El token
+caduca en `JWT_EXPIRES_IN` (1 hora por defecto); cuando el servidor lo rechaza,
+el cliente cierra la sesion y lleva al formulario de acceso avisando de que ha
+caducado.
+
 ## Estructura
 
 ```

@@ -25,6 +25,36 @@ api.interceptors.request.use((config) => {
 });
 
 /**
+ * Evento que se emite cuando el servidor rechaza el token guardado.
+ *
+ * El modulo no navega por su cuenta: avisa, y AuthProvider decide. Asi el
+ * cliente HTTP no depende del router ni fuerza una recarga completa de la
+ * pagina.
+ */
+export const EVENTO_SESION_CADUCADA = 'auth:sesion-caducada';
+
+/** Rutas donde un 401 significa "credenciales incorrectas", no "token caducado". */
+const RUTAS_DE_CREDENCIALES = ['/api/auth/login', '/api/auth/register'];
+
+api.interceptors.response.use(
+  (respuesta) => respuesta,
+  (error: unknown) => {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      const url = error.config?.url ?? '';
+      const esIntentoDeLogin = RUTAS_DE_CREDENCIALES.some((ruta) => url.includes(ruta));
+
+      /* Solo se trata como caducidad si habia una sesion guardada: un 401 al
+         iniciar sesion es una contrasena incorrecta y debe llegar al formulario
+         tal cual. */
+      if (!esIntentoDeLogin && localStorage.getItem(TOKEN_KEY)) {
+        window.dispatchEvent(new Event(EVENTO_SESION_CADUCADA));
+      }
+    }
+    return Promise.reject(error);
+  },
+);
+
+/**
  * Extrae el mensaje de un fallo de la API.
  *
  * Antes se accedia a `error.response.data` directamente: cuando la peticion no
