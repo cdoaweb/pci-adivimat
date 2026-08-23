@@ -7,7 +7,7 @@ import {
   model,
 } from 'mongoose';
 
-import { INTENTOS_POR_DEFECTO } from '@adivimat/shared';
+import { type Dificultad, INTENTOS_POR_DEFECTO } from '@adivimat/shared';
 
 /**
  * Temas, subtemas y adivinanzas viven en un mismo documento: subtemas y
@@ -30,8 +30,15 @@ import { INTENTOS_POR_DEFECTO } from '@adivimat/shared';
 /* ---------------------------------------------------------- adivinanza -- */
 
 export interface IAdivinanza {
+  /** Numero en el libro original, para poder citar la fuente. */
+  numero?: number;
   pregunta: string;
   respuesta: string;
+  /** Otras formas que tambien se dan por buenas al responder. */
+  respuestasAceptadas: string[];
+  /** Matiz del libro sobre que aspecto del concepto se pregunta. */
+  pista?: string;
+  dificultad: Dificultad;
   intentos: number;
   puntos: number;
   respuestaRevelada: boolean;
@@ -40,8 +47,12 @@ export interface IAdivinanza {
 export type AdivinanzaDoc = HydratedArraySubdocument<IAdivinanza>;
 
 export const AdivinanzaSchema = new Schema<IAdivinanza>({
+  numero: { type: Number },
   pregunta: { type: String, required: true, trim: true },
   respuesta: { type: String, required: true, trim: true },
+  respuestasAceptadas: { type: [String], default: [] },
+  pista: { type: String, trim: true },
+  dificultad: { type: String, enum: ['basica', 'avanzada'], default: 'basica' },
   intentos: {
     type: Number,
     default: INTENTOS_POR_DEFECTO,

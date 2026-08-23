@@ -108,6 +108,107 @@ El token caduca en `JWT_EXPIRES_IN` (1 hora por defecto); cuando el servidor lo
 rechaza, el cliente cierra la sesion y lleva al formulario de acceso avisando de
 que ha caducado.
 
+## Base de datos
+
+El destino lo fija `MONGO_URI`. Hay dos modos y se eligen con `COMPOSE_FILE` en
+el `.env`.
+
+### Mongo en local (por defecto)
+
+```
+COMPOSE_FILE=docker-compose.yml:docker-compose.local-db.yml
+```
+
+Levanta tambien `mongo` y `mongo-express`.
+
+### MongoDB Atlas
+
+1. En el `.env`, deja solo el compose de la aplicacion:
+
+   ```
+   COMPOSE_FILE=docker-compose.yml
+   ```
+
+2. Apunta `MONGO_URI` a tu cluster, **con el nombre de la base de datos** antes
+   de la interrogacion:
+
+   ```
+   MONGO_URI=mongodb+srv://usuario:password@cluster.xxxxx.mongodb.net/adivimat?retryWrites=true&w=majority
+   ```
+
+   Si la password contiene `@ : / ? # [ ] %`, hay que codificarla en porcentaje.
+
+3. En Atlas, **Network Access**: autoriza la IP desde la que se conecta el
+   backend. Es el fallo mas comun; sin ella la conexion agota el tiempo de
+   espera sin un mensaje claro.
+
+4. Carga el temario (ver mas abajo).
+
+No hace falta tocar codigo: mongoose entiende `mongodb+srv://` y negocia TLS por
+su cuenta.
+
+## Contenido: las 304 adivinanzas
+
+El temario sale del libro *ADIVIMAT*, de Jose Enrique Fernandez del Campo, y
+esta en `backend/seed/adivinanzas.json`: 7 temas, 17 subtemas y las 304
+adivinanzas con su respuesta.
+
+Para cargarlo:
+
+```bash
+npm run seed --workspace backend
+```
+
+Sin `--reset` no hace nada si ya hay temas, para no duplicar el temario. Para
+reemplazarlo:
+
+```bash
+npm run seed --workspace backend -- --reset
+```
+
+El JSON **no se edita a mano**: lo genera `backend/seed/parse_adivimat.py` a
+partir del PDF del libro.
+
+```bash
+pdftotext -layout -enc UTF-8 advm.pdf advm.txt
+```
+
+```bash
+python backend/seed/parse_adivimat.py advm.txt backend/seed/adivinanzas.json
+```
+
+### Como se corrigen las respuestas
+
+Exigir la respuesta literal haria el juego injugable: las soluciones del libro
+son terminos como "angulo obtusangulo" o expresiones completas como "mediatriz
+de un segmento". Se aceptan por tanto:
+
+- **Sin distinguir mayusculas, tildes ni puntuacion.** `SEGMÉNTO.` vale por
+  `segmento`. Exigir la acentuacion correcta (o saber teclearla en un movil)
+  convertiria un acierto en un fallo.
+- **Sin el articulo inicial.** `el segmento` vale por `segmento`.
+- **En singular o en plural.** El libro responde unas veces en singular y otras
+  en plural, segun cuantos elementos hablen en la adivinanza.
+- **La forma corta**, cuando el complemento no es lo que distingue la respuesta:
+  `mediatriz` vale por `mediatriz de un segmento`. No se acepta cuando ese
+  complemento es justo lo esencial: `limite` no vale por `limite por la
+  izquierda de una funcion en un punto`, porque borraria la diferencia con
+  `... por la derecha`.
+
+La enye si se respeta: `ano` no es `año`.
+
+### Ayudas durante la partida
+
+- Tras el primer fallo aparece el **matiz del libro** (59 adivinanzas lo
+  tienen). Es lo que distingue preguntas con la misma respuesta: tres piden
+  "bisectriz", una como eje de simetria y otra por distancia.
+- Tras el segundo, la **forma de la respuesta**: inicial y numero de letras, o
+  cuantas palabras son.
+- Las 27 que el autor marco con asterisco salen etiquetadas como *avanzada* y
+  dan 7 intentos en lugar de 5.
+- Las adivinanzas se reparten **sin repetir** hasta agotar el subtema, y el
+  marcador muestra aciertos, puntos y cuantas quedan.
+
 ## Estructura
 
 ```

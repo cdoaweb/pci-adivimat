@@ -1,47 +1,20 @@
 name: adivimat
 
-# Sustituye a backend/stack/docker-compose.yml, que solo levantaba la base de
-# datos. Las credenciales ya no estan escritas en este archivo: se leen del .env
-# (ignorado por git), asi que dejan de viajar en el repositorio.
+# Servicios de la aplicacion. La base de datos NO esta aqui: el destino lo fija
+# MONGO_URI, que puede apuntar a MongoDB Atlas o a un Mongo local.
+#
+# Para levantar tambien un Mongo en local, se encadena docker-compose.local-db.yml.
+# El .env trae `COMPOSE_FILE` preparado para eso, asi que `docker compose up -d`
+# funciona en los dos casos sin escribir mas banderas: para usar Atlas basta con
+# dejar solo este archivo en esa variable.
 
 services:
-  mongo:
-    # Fijada a la mayor de la serie 8, que es la que instalaba el `mongo` sin
-    # etiqueta del compose anterior. Sin fijar, un `docker compose pull` podria
-    # traer una version mayor incompatible con los datos existentes.
-    image: mongo:8
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-    ports:
-      - '27017:27017'
-    volumes:
-      # El compose anterior no declaraba volumen: los datos se perdian con cada
-      # `docker compose down`.
-      - mongo-data:/data/db
-    healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'mongosh -u "$$MONGO_INITDB_ROOT_USERNAME" -p "$$MONGO_INITDB_ROOT_PASSWORD" --quiet --eval "db.adminCommand({ ping: 1 })"',
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-
   backend:
     build:
       # El contexto es la raiz porque el backend depende del workspace shared/.
       context: .
       dockerfile: backend/Dockerfile
     restart: unless-stopped
-    depends_on:
-      mongo:
-        # Espera a que Mongo acepte conexiones, no solo a que el contenedor
-        # arranque, para que el backend no muera intentando conectar.
-        condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: ${PORT}
@@ -83,22 +56,3 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-
-  mongo-express:
-    image: mongo-express:1.0.2
-    restart: unless-stopped
-    depends_on:
-      mongo:
-        condition: service_healthy
-    ports:
-      # 8082 por defecto: el 8081 suele estar ocupado por otros proyectos.
-      - '${MONGO_EXPRESS_PORT}:8081'
-    environment:
-      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER}
-      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
-      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USERNAME}
-      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD}
-      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongo:27017/
-
-volumes:
-  mongo-data:

@@ -50,6 +50,10 @@ COPY --from=builder /app/backend/package.json ./backend/package.json
 # imagen final.
 COPY --from=builder /app/backend/dist ./backend/dist
 
+# El temario, para poder cargarlo desde el contenedor:
+#   docker compose exec backend node backend/dist/scripts/seed.js --reset
+COPY --from=builder /app/backend/seed ./backend/seed
+
 USER node
 EXPOSE 4000
 CMD ["node", "backend/dist/server.js"]

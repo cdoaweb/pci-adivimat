@@ -15,8 +15,12 @@ import type { UserDoc } from './user';
 export function toAdivinanza(doc: AdivinanzaDoc): Adivinanza {
   return {
     id: doc._id.toString(),
+    ...(doc.numero !== undefined ? { numero: doc.numero } : {}),
     pregunta: doc.pregunta,
     respuesta: doc.respuesta,
+    respuestasAceptadas: doc.respuestasAceptadas,
+    ...(doc.pista ? { pista: doc.pista } : {}),
+    dificultad: doc.dificultad,
     intentos: doc.intentos,
     puntos: doc.puntos,
     respuestaRevelada: doc.respuestaRevelada,

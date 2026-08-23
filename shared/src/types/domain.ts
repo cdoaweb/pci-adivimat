@@ -9,10 +9,32 @@
 /** Identificador de una entidad. En el backend es un ObjectId serializado. */
 export type Id = string;
 
+/** El autor marca con asterisco las adivinanzas mas exigentes. */
+export type Dificultad = 'basica' | 'avanzada';
+
 export interface Adivinanza {
   id: Id;
+  /** Numero en el libro original. Sirve para citar la fuente. */
+  numero?: number;
   pregunta: string;
+  /** Respuesta canonica, la que se muestra al revelarla. */
   respuesta: string;
+  /**
+   * Otras formas que tambien se dan por buenas.
+   *
+   * Muchas respuestas del libro son expresiones completas ("mediatriz de un
+   * segmento") cuando lo que el jugador teclea es el concepto ("mediatriz").
+   * Sin esto el juego seria injugable.
+   */
+  respuestasAceptadas: string[];
+  /**
+   * Matiz del libro sobre que aspecto del concepto se pregunta.
+   *
+   * Distingue adivinanzas con la misma respuesta: tres preguntan por la
+   * "bisectriz", una como eje de simetria y otra por distancia.
+   */
+  pista?: string;
+  dificultad: Dificultad;
   /** Intentos que le quedan al usuario. Nunca negativo. */
   intentos: number;
   /** Puntos acumulados en esta adivinanza. Nunca negativo. */
