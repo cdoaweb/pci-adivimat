@@ -1,0 +1,10 @@
+# Cloudflare Pages sirve archivos estaticos: no hay servidor que reescriba las
+# rutas. Sin esta regla, entrar directo a /gestion o recargar esa pagina
+# devuelve un 404, porque en el disco no existe ese archivo.
+#
+# Es el equivalente del `try_files $uri $uri/ /index.html` de nginx que usa la
+# imagen de Docker.
+#
+# El 200 importa: con un 301 o un 302 el navegador cambiaria la URL y React
+# Router perderia la ruta a la que se queria ir.
+/*    /index.html   200

@@ -22,6 +22,7 @@ directo al contenido educativo.
 | [Conclusiones](docs/06-conclusiones.md) | Reflexión sobre el proyecto |
 | [Bibliografía](docs/07-bibliografia.md) | Fuentes consultadas |
 | [Evolución del proyecto](docs/08-evolucion.md) | Qué ha cambiado desde la memoria de 2024 |
+| [Despliegue](docs/09-despliegue.md) | Cloudflare Pages, la API y el dominio |
 | [Diagramas de caso de uso](docs/Descripcion-de-Diagramas-caso-de-uso.md) | Actores y funcionalidades |
 | [Diagrama de la base de datos](docs/DescripcionDiagramaDB.md) | Entidades y por qué van anidadas |
 

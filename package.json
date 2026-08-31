@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspace shared && npm run build --workspace backend && npm run build --workspace @adivimat/frontend",
+    "build:web": "npm run build --workspace shared && npm run build --workspace @adivimat/frontend",
     "dev:backend": "npm run dev --workspace backend",
     "dev:frontend": "npm run dev --workspace @adivimat/frontend",
     "typecheck": "npm run typecheck --workspaces --if-present",
